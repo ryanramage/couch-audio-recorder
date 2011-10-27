@@ -119,24 +119,15 @@
 
     <dependencies>
         <dependency>
-            <groupId>org.ektorp</groupId>
-            <artifactId>org.ektorp</artifactId>
-            <version>1.2.1</version>
+            <groupId>com.github.couchapp-takeout</groupId>
+            <artifactId>plugins</artifactId>
+            <version>1.0-SNAPSHOT</version>
         </dependency>
-        <dependency>
-           <groupId>org.bushe</groupId>
-            <artifactId>eventbus</artifactId>
-            <version>1.4</version>
-        </dependency>
+
         <dependency>
            <groupId>commons-io</groupId>
             <artifactId>commons-io</artifactId>
             <version>1.4</version>
-        </dependency>
-        <dependency>
-            <groupId>joda-time</groupId>
-            <artifactId>joda-time</artifactId>
-            <version>1.6.2</version>
         </dependency>
 
         <dependency>
