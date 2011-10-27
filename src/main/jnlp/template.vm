@@ -1,0 +1,24 @@
+<?xml version="1.0" encoding="utf-8"?>
+<jnlp
+    spec="1.0+"
+    codebase="http://localhost:81/webstart/_design/app/"
+    href="$outputFile">
+  <information>
+    <title>$project.Name</title>
+    <vendor>A<vendor/>
+    <homepage>B<homepage/>
+    <description kind="one-line">C</description>
+  </information>
+  <security>
+     <all-permissions/>
+  </security>
+  <resources>
+    <j2se version="1.4+"
+     initial-heap-size="32m"
+     max-heap-size="128m"
+     />
+     $dependencies
+  </resources>
+  <application-desc main-class="$mainClass">
+  </application-desc>
+</jnlp>
