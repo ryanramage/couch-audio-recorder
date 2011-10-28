@@ -11,6 +11,9 @@ package com.googlecode.eckoit.audio;
  */
 public class SplitAudioRecorderConfiguration {
 
+
+    private boolean stream = false;
+
     private float wavSampleRate = 16000.0F;
     private int wavSampleSize = 16;
 
@@ -102,6 +105,20 @@ public class SplitAudioRecorderConfiguration {
      */
     public void setOggFrequency(long oggFrequency) {
         this.oggFrequency = oggFrequency;
+    }
+
+    /**
+     * @return the stream
+     */
+    public boolean isStream() {
+        return stream;
+    }
+
+    /**
+     * @param stream the stream to set
+     */
+    public void setStream(boolean stream) {
+        this.stream = stream;
     }
 
     

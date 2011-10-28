@@ -54,6 +54,19 @@ public class FFMpegConverter implements AudioEncoder {
     }
 
 
+    public void makeTS(File mp3, File outputfile) throws InterruptedException, IOException {
+        ProcessBuilder pb = new ProcessBuilder(new String[] {ffmpegFullCommand, "-i", mp3.getAbsolutePath(), "-y", "-acodec", "copy", "-f", "mpegts", outputfile.getAbsolutePath()} );
+        pb.redirectErrorStream(true);
+        Process p = pb.start();
+        InputStream stream = p.getInputStream();
+        int chr = stream.read();
+        while (chr != -1) {
+            chr = stream.read();
+        }
+    }
+
+
+
     public void convertURL(String url, long bitrate, long frequency, File outputfile, boolean forceOverwrite) throws InterruptedException, IOException {
         if (outputfile.exists() && !forceOverwrite) {
             throw new IllegalArgumentException("The output file exists, and force overwriting is not true");

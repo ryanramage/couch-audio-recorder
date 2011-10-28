@@ -26,7 +26,7 @@ import org.bushe.swing.event.EventBus;
  * @author ryan
  */
 public class SplitAudioRecorder implements AudioRecorder {
-    private static long splitTime = 300000L; // 5 minutes
+    private static long splitTime = 10000L; // 10 seconds
     private static SplitAudioRecorder singletonObject;
 
     private boolean isRecording = false;

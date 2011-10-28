@@ -13,6 +13,7 @@ import com.googlecode.eckoit.events.RecordingStartClickedEvent;
 import com.googlecode.eckoit.events.RecordingStartedResponseEvent;
 import com.googlecode.eckoit.events.RecordingStopClickedEvent;
 import com.googlecode.eckoit.events.RecordingStoppedResponseEvent;
+import com.googlecode.eckoit.events.StreamReadyEvent;
 import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.IOException;
@@ -42,6 +43,8 @@ public class SplitAudioRecorderManager  {
     File finalDir;
     private String mixer = "default";
     private float gain = 1;
+    
+
 
     String currentRecordingID;
 
@@ -82,8 +85,10 @@ public class SplitAudioRecorderManager  {
         EventBus.subscribeStrongly(ConversionFinishedEvent.class, new EventSubscriber<ConversionFinishedEvent>() {
             @Override
             public void onEvent(ConversionFinishedEvent t) {
+                if (t instanceof StreamReadyEvent) return; // ignore these. 
+
                 File wav = t.getFinishedFile();
-                if (t != null && t.getFinishedFile().equals(wav)) {
+                if (lastFile != null && lastFile.getFinishedFile().equals(wav)) {
                     try {
                         File[] results = mergeFiles(lastFile.getRecordingID());
                         EventBus.publish(new RecordingCompleteEvent(results));

@@ -5,12 +5,15 @@
 
 package com.googlecode.eckoit.audio.couch;
 
+import com.googlecode.eckoit.events.ConversionFinishedEvent;
 import com.googlecode.eckoit.events.PostProcessingStartedEvent;
 import com.googlecode.eckoit.events.RecordingCompleteEvent;
+import com.googlecode.eckoit.events.RecordingSplitEvent;
 import com.googlecode.eckoit.events.RecordingStartClickedEvent;
 import com.googlecode.eckoit.events.RecordingStartedResponseEvent;
 import com.googlecode.eckoit.events.RecordingStopClickedEvent;
 import com.googlecode.eckoit.events.RecordingStoppedResponseEvent;
+import com.googlecode.eckoit.events.StreamReadyEvent;
 import com.googlecode.eckoit.events.UploadingFinishedEvent;
 import com.googlecode.eckoit.events.UploadingStartedEvent;
 import java.io.FileInputStream;
@@ -41,6 +44,7 @@ public class CouchDBRecording {
     private String recorderUUID;
 
     private ObjectNode currentRecordingDoc;
+    private boolean streamAudio = true;
 
     public CouchDBRecording(final CouchDbConnector connector) {
         this.connector = connector;
@@ -86,7 +90,7 @@ public class CouchDBRecording {
                 try {
                     // mp3
                     FileInputStream fis = new FileInputStream(t.getRecordings()[0]);
-                    AttachmentInputStream ais = new AttachmentInputStream("-recording1.mp3",fis, "audio/mp3");
+                    AttachmentInputStream ais = new AttachmentInputStream("complete.mp3",fis, "audio/mp3");
                     revision = connector.createAttachment(id, revision, ais);
                     ais.close();
                     fis.close();
@@ -97,7 +101,7 @@ public class CouchDBRecording {
                     if (t.getRecordings().length == 2){
                         // ogg
                         FileInputStream fis = new FileInputStream(t.getRecordings()[1]);
-                        AttachmentInputStream ais = new AttachmentInputStream("-recording1.ogg",fis, "audio/ogg");
+                        AttachmentInputStream ais = new AttachmentInputStream("complete.ogg",fis, "audio/ogg");
                         revision = connector.createAttachment(id, revision, ais);
                         ais.close();
                         fis.close();
@@ -109,6 +113,31 @@ public class CouchDBRecording {
                 currentRecordingDoc = null;
             }
         });
+
+        EventBus.subscribeStrongly(StreamReadyEvent.class, new EventSubscriber<StreamReadyEvent>() {
+            @Override
+            public void onEvent(StreamReadyEvent t) {
+                if (streamAudio) {
+                    try {
+                        FileInputStream fis = new FileInputStream(t.getAvailableToStream());
+                        String name = "fileSequence" + t.getSegmentCount() + ".ts";
+                        AttachmentInputStream ais = new AttachmentInputStream(name,fis, "audio/mp3");
+
+                        String id = currentRecordingDoc.get("_id").getTextValue();
+                        String rev = currentRecordingDoc.get("_rev").getTextValue();
+
+                        rev =  connector.createAttachment(id, rev, ais);
+                        currentRecordingDoc.put("_rev", rev);
+                        ais.close();
+                    fis.close();
+                    } catch (Exception e) {
+
+                    }
+                }
+            }
+        });
+
+
     }
 
 

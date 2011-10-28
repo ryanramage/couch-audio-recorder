@@ -9,6 +9,7 @@ import com.googlecode.eckoit.events.ConversionFinishedEvent;
 import com.googlecode.eckoit.events.ExitApplicationMessage;
 
 import com.googlecode.eckoit.events.RecordingSplitEvent;
+import com.googlecode.eckoit.events.StreamReadyEvent;
 import java.io.File;
 import java.io.IOException;
 import java.util.concurrent.LinkedBlockingQueue;
@@ -82,12 +83,25 @@ public class ContinousAudioConvereter extends Thread implements  EventSubscriber
         File ogg = null;
         try {
             mp3 = convertToMP3(recordingID, wav);
+            if (config.isStream()) {
+                File ts = convertToTs(recordingID, mp3);
+
+                StreamReadyEvent sre = new StreamReadyEvent(wav, "video/MP2T");
+                sre.setAvailableToStream(mp3);
+                sre.setStreamDuration((int) (SplitAudioRecorder.getSplitTime() / 1000));
+                sre.setSegmentCount(getSegmentCount(wav));
+                EventBus.publish(sre);
+            }
             ogg = convertToOGG(recordingID, wav);
         } catch (Exception ex) {
             Logger.getLogger(ContinousAudioConvereter.class.getName()).log(Level.SEVERE, null, ex);
         }
         if (ogg != null && ogg.exists() && mp3 != null && mp3.exists()) {
-            EventBus.publish(new ConversionFinishedEvent(wav));
+
+            ConversionFinishedEvent finished = new ConversionFinishedEvent(wav);            
+            
+            
+            EventBus.publish(finished);
         }
     }
 
@@ -135,10 +149,15 @@ public class ContinousAudioConvereter extends Thread implements  EventSubscriber
         oggTemp.renameTo(ogg);
         return ogg;
     }
-
+    private File convertToTs(String recordingID, File mp3) throws InterruptedException, IOException {
+        FFMpegConverter converter = new FFMpegConverter(ffmpegcmd, FFMpegConverter.ENCODER_MP3);
+        File ts = getFileForDocument(recordingID, mp3, ".ts");
+        converter.makeTS(mp3, ts);
+        return ts;
+    }
     private File getFileForDocument(String recordingID, File wav, String suffix) {
         // just do sibblings
-        String count = wav.getName().substring(0, wav.getName().lastIndexOf('.'));
+        String count = getSegmentCount(wav);
 
         File parent = new File(destDir, recordingID);
         parent.mkdirs();
@@ -148,6 +167,9 @@ public class ContinousAudioConvereter extends Thread implements  EventSubscriber
         return new File(parent, count + suffix);
     }
 
+    private String getSegmentCount(File wav) {
+        return wav.getName().substring(0, wav.getName().lastIndexOf('.'));
+    }
 
 
 
@@ -163,5 +185,7 @@ public class ContinousAudioConvereter extends Thread implements  EventSubscriber
     public void onEvent(RecordingSplitEvent recordingSplit) {
         completedRecordings.add(recordingSplit);
     }
+
+
 
 }

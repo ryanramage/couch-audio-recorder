@@ -23,6 +23,7 @@ import com.googlecode.eckoit.events.UploadingFinishedEvent;
 import com.googlecode.eckoit.events.UploadingStartedEvent;
 import java.awt.BorderLayout;
 import java.io.File;
+import java.util.Date;
 import java.util.UUID;
 import javax.swing.JFrame;
 import org.bushe.swing.event.EventBus;
@@ -188,7 +189,7 @@ public class SimpleRecordPanel extends javax.swing.JPanel {
     }//GEN-LAST:event_stopButtonActionPerformed
 
     private void startButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_startButtonActionPerformed
-        EventBus.publish(new RecordingStartClickedEvent(UUID.randomUUID().toString()));
+        EventBus.publish(new RecordingStartClickedEvent(new Date().getTime() + "" ));
     }//GEN-LAST:event_startButtonActionPerformed
 
 
@@ -216,7 +217,9 @@ public class SimpleRecordPanel extends javax.swing.JPanel {
                 String ffmpeg = "/Applications/eckoit/lib/ffmpeg";
                 File file = new File("target");
 
-                SplitAudioRecorderManager recorder = new SplitAudioRecorderManager(ffmpeg, file, new SplitAudioRecorderConfiguration());
+                SplitAudioRecorderConfiguration config = new SplitAudioRecorderConfiguration();
+                config.setStream(true);
+                SplitAudioRecorderManager recorder = new SplitAudioRecorderManager(ffmpeg, file,config);
                 
 
 
