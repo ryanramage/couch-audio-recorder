@@ -1,0 +1,9 @@
+{
+    "name": "couchaudiorecorder",
+    "version": "0.0.1",
+    "description": "Speak and read",
+    "app": "app",
+    "dependencies": {
+        "node-couchapp": null
+    }
+}

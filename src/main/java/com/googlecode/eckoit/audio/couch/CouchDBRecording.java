@@ -222,28 +222,28 @@ public class CouchDBRecording {
     protected RecordingState detectState(ObjectNode doc) {
         JsonNode recordingState = doc.get("recordingState");
         if (recordingState != null) {                  
-            if (doc.get("recordingComplete") != null) {
+            if (recordingState.get("recordingComplete") != null) {
                 return RecordingState.RECORDING_COMPLETE;
             }
-            if (doc.get("postProcessingStarted") != null) {
+            if (recordingState.get("postProcessingStarted") != null) {
                 return RecordingState.POST_PROCESSING_STARTED;
             }
-            if (doc.get("stopComplete") != null) {
+            if (recordingState.get("stopComplete") != null) {
                 return RecordingState.STOP_COMPLETE;
             }
-            if (doc.get("stopAsked") != null) {
+            if (recordingState.get("stopAsked") != null) {
                 return RecordingState.STOP_ASKED;
             }
-            if (doc.get("startComplete") != null) {
+            if (recordingState.get("startComplete") != null) {
                 return RecordingState.START_COMPLETE;
             }
-            if (doc.get("startAsked") != null) {
+            if (recordingState.get("startAsked") != null) {
                 return RecordingState.START_ASKED;
             }
-            if (doc.get("recorderAsked") != null) {
+            if (recordingState.get("recorderAsked") != null) {
                 return RecordingState.RECORDER_ASKED;
             }
-            if (doc.get("recorderAvailable") != null) {
+            if (recordingState.get("recorderAvailable") != null) {
                 return RecordingState.RECORDER_AVAILABLE;
             }
         }
