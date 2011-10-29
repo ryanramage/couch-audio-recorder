@@ -112,7 +112,7 @@ public class SplitAudioRecorderManager  {
                 currentRecordingID = t.getRecordingID();
                 try {
                     recorder.startRecording(currentRecordingID, mixer, gain);
-                    EventBus.publish(new RecordingStartedResponseEvent());
+                    EventBus.publish(new RecordingStartedResponseEvent(currentRecordingID));
                 } catch (LineUnavailableException ex) {
                     Logger.getLogger(SplitAudioRecorderManager.class.getName()).log(Level.SEVERE, null, ex);
                 }

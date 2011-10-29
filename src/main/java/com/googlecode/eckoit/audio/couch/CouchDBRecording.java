@@ -5,6 +5,8 @@
 
 package com.googlecode.eckoit.audio.couch;
 
+import com.googlecode.eckoit.audio.SplitAudioRecorderConfiguration;
+import com.googlecode.eckoit.audio.SplitAudioRecorderManager;
 import com.googlecode.eckoit.events.ConversionFinishedEvent;
 import com.googlecode.eckoit.events.PostProcessingStartedEvent;
 import com.googlecode.eckoit.events.RecordingCompleteEvent;
@@ -16,6 +18,7 @@ import com.googlecode.eckoit.events.RecordingStoppedResponseEvent;
 import com.googlecode.eckoit.events.StreamReadyEvent;
 import com.googlecode.eckoit.events.UploadingFinishedEvent;
 import com.googlecode.eckoit.events.UploadingStartedEvent;
+import java.io.File;
 import java.io.FileInputStream;
 import java.math.BigDecimal;
 import java.util.Date;
@@ -25,6 +28,7 @@ import java.util.logging.Logger;
 import org.bushe.swing.event.EventBus;
 import org.bushe.swing.event.EventSubscriber;
 import org.codehaus.jackson.JsonNode;
+import org.codehaus.jackson.map.ObjectMapper;
 import org.codehaus.jackson.node.ObjectNode;
 import org.ektorp.AttachmentInputStream;
 import org.ektorp.CouchDbConnector;
@@ -44,6 +48,7 @@ public class CouchDBRecording {
     private String recorderUUID;
 
     private ObjectNode currentRecordingDoc;
+    private boolean running = true;
     private boolean streamAudio = true;
 
     public CouchDBRecording(final CouchDbConnector connector) {
@@ -54,6 +59,11 @@ public class CouchDBRecording {
         EventBus.subscribeStrongly(RecordingStartedResponseEvent.class, new EventSubscriber<RecordingStartedResponseEvent>() {
             @Override
             public void onEvent(RecordingStartedResponseEvent t) {
+
+                // get the current doc
+                currentRecordingDoc = connector.get(ObjectNode.class, t.getRecordingID());
+
+
                 ObjectNode recordingState = getRecordingState(currentRecordingDoc);
                 recordingState.put("startComplete", new Date().getTime());
                 connector.update(currentRecordingDoc);
@@ -117,21 +127,31 @@ public class CouchDBRecording {
         EventBus.subscribeStrongly(StreamReadyEvent.class, new EventSubscriber<StreamReadyEvent>() {
             @Override
             public void onEvent(StreamReadyEvent t) {
+                System.out.println("Streaming");
                 if (streamAudio) {
                     try {
+
+
+                        System.out.println("out");
+                        // create a doc
+                        ObjectMapper map = new ObjectMapper();
+                        ObjectNode node = map.createObjectNode();
+                        node.put("type", "recording-segment");
+                        node.put("recording", currentRecordingDoc.get("_id").getTextValue());
+                        connector.create(node);
+
+                        // attach
                         FileInputStream fis = new FileInputStream(t.getAvailableToStream());
                         String name = "fileSequence" + t.getSegmentCount() + ".ts";
-                        AttachmentInputStream ais = new AttachmentInputStream(name,fis, "audio/mp3");
+                        AttachmentInputStream ais = new AttachmentInputStream(name,fis, "video/MP2T");
 
-                        String id = currentRecordingDoc.get("_id").getTextValue();
-                        String rev = currentRecordingDoc.get("_rev").getTextValue();
-
+                        String id = node.get("_id").getTextValue();
+                        String rev = node.get("_rev").getTextValue();
                         rev =  connector.createAttachment(id, rev, ais);
-                        currentRecordingDoc.put("_rev", rev);
                         ais.close();
                     fis.close();
                     } catch (Exception e) {
-
+                        System.out.println(e.getMessage());
                     }
                 }
             }
@@ -147,51 +167,77 @@ public class CouchDBRecording {
     }
     
     public void watch() {
-        ChangesCommand cmd = new ChangesCommand.Builder().build();
+        ChangesCommand cmd = new ChangesCommand.Builder().filter("couchaudiorecorder/recordings").build();
 
-        feed = connector.changesFeed(cmd);
 
-        while (feed.isAlive()) {
-            DocumentChange change;
+        // added to ensure no kids left behind
+        Runtime.getRuntime().addShutdownHook(new Thread() {
+           @Override
+           public void run() {
+             running = false;
+             feed.cancel();
+           }
+          });
+
+
+        while (running) {
             try {
-                change = feed.next();
-                String docId = change.getId();
-                ObjectNode doc = loadRecordingDoc(docId);
-                if (doc != null) {
-                    processRecordingDoc(doc);
-                }
+                feed = connector.changesFeed(cmd);
 
-            } catch (InterruptedException ex) {
-                Logger.getLogger(CouchDBRecording.class.getName()).log(Level.SEVERE, null, ex);
+                while (feed.isAlive()) {   
+                    DocumentChange change = feed.next();
+                    System.out.println("Got a change!");
+                    String docId = change.getId();
+                    System.out.println(docId);
+                    ObjectNode doc = loadRecordingDoc(docId);
+                    if (doc != null) {
+                        System.out.println("has doc");
+                        processRecordingDoc(doc);
+                    }
+                }
+            } catch (Exception e) {
+                try {
+                    // this catches any interrupted exceptions
+                    Thread.sleep(1000);
+                } catch (InterruptedException ex) {
+                    Logger.getLogger(CouchDBRecording.class.getName()).log(Level.SEVERE, null, ex);
+                }
             }
-            
         }
+
+
+
     }
 
 
     protected void processRecordingDoc(ObjectNode doc) {
         final RecordingState state = detectState(doc);
+        System.out.println("state: " + state.name());
         if (state == RecordingState.RECORDER_ASKED) {
-            if (currentRecordingDoc == null) {
+            System.out.println("Recorder asked");
+            if (currentRecordingDoc == null) {                
+                 System.out.println("we are programmed to receive");
                 // we are free...lets volenteer
-                ObjectNode recordingState = getRecordingState(currentRecordingDoc);
+                ObjectNode recordingState = getRecordingState(doc);
                 recordingState.put("recorderAvailable", recorderUUID);
                 connector.update(doc);
-                // if here. we won
-                currentRecordingDoc = doc;
             }
         }
-        if (state == RecordingState.START_ASKED) {
-            if (isOurRecorder(doc)) {
+        if (isOurRecorder(doc)) {
+
+            if (state == RecordingState.RECORDING_COMPLETE) {
+                currentRecordingDoc = null; // make us available
+                return;
+            }
+            currentRecordingDoc = doc; // keeps the rev up
+            if (state == RecordingState.START_ASKED) {
                 EventBus.publish(new RecordingStartClickedEvent(doc.get("_id").getTextValue()));
             }
-        }
-        if (state == RecordingState.STOP_ASKED) {
-            if (isOurRecorder(doc)) {
+            if (state == RecordingState.STOP_ASKED) {
                 EventBus.publish(new RecordingStopClickedEvent());
             }
-
         }
+
     }
 
     protected boolean isOurRecorder(ObjectNode doc) {
@@ -213,6 +259,7 @@ public class CouchDBRecording {
     protected ObjectNode loadRecordingDoc(String docID) {
         if (docID.startsWith(recordingDocIdPrefex)) {
             ObjectNode doc = connector.get(ObjectNode.class, docID);
+            System.out.println(doc);
             return doc;
         }
         return null;
@@ -240,12 +287,13 @@ public class CouchDBRecording {
             if (recordingState.get("startAsked") != null) {
                 return RecordingState.START_ASKED;
             }
-            if (recordingState.get("recorderAsked") != null) {
-                return RecordingState.RECORDER_ASKED;
-            }
             if (recordingState.get("recorderAvailable") != null) {
                 return RecordingState.RECORDER_AVAILABLE;
             }
+            if (recordingState.get("recorderAsked") != null) {
+                return RecordingState.RECORDER_ASKED;
+            }
+
         }
         return RecordingState.UNKNOWN;
     }
@@ -273,6 +321,11 @@ public class CouchDBRecording {
         STOP_ASKED, STOP_COMPLETE,
         POST_PROCESSING_STARTED, RECORDING_COMPLETE
     }
+
+
+
+
+
 
 
 }
