@@ -138,12 +138,13 @@ public class CouchDBRecording {
                         ObjectNode node = map.createObjectNode();
                         node.put("type", "recording-segment");
                         node.put("recording", currentRecordingDoc.get("_id").getTextValue());
+                        node.put("startTime", t.getStartTime());
                         connector.create(node);
 
                         // attach
                         FileInputStream fis = new FileInputStream(t.getAvailableToStream());
                         String name = "fileSequence" + t.getSegmentCount() + ".ts";
-                        AttachmentInputStream ais = new AttachmentInputStream(name,fis, "video/MP2T");
+                        AttachmentInputStream ais = new AttachmentInputStream(name,fis, t.getContentType());
 
                         String id = node.get("_id").getTextValue();
                         String rev = node.get("_rev").getTextValue();

@@ -15,9 +15,11 @@ var couchapp = require('couchapp')
   ddoc.language = "javascript";
   ddoc.rewrites = [
       {from:"/", to:'index.html'}
+    , {from:"/audio/:id/stream.m3u8", to:'_list/streamAudio/byStream.m3u8', query : {key: ":id"}}
+    , {from:"/audio/:id/:doc/:attachment", to:'../../:doc/:attachment'}
     , {from:"/api", to:'../../'}
     , {from:"/api/*", to:'../../*'}
-    , {from:"/audio/:id/stream.m3u8", to:'_show/streamAudio/:id'}
+
     , {from:"/*", to:'*'}
     ];
 
@@ -41,7 +43,11 @@ var couchapp = require('couchapp')
           if (doc.type && doc.type == "recording-segment" && doc.recording && doc._attachments) {
               for (first in doc._attachments) break;
               var attachmentInfo = doc._attachments[first];
-              emit(doc.recording, {_id: doc._id, attachmentName : first, attachmentInfo: attachmentInfo});
+              var data = {_id: doc._id, attachmentName : first, attachmentInfo: attachmentInfo};
+              if (doc.startTime) {
+                  data.startTime = doc.startTime;
+              }
+              emit(doc.recording, data);
           }
       }
   }
@@ -50,19 +56,22 @@ var couchapp = require('couchapp')
 
         var prefix = "recording-";
 
-        start({ "headers" : {"Content-type" : "application/x-mpegURL"}});
+        start({ "headers" : {"Content-type" : "application/vnd.apple.mpegurl"}});
         var first = true;
 
-        var head =  "#EXTM3U\n";
-            head += "#EXT-X-TARGETDURATION:10\n"; // we expect the avg duration to be 10 secs
-            head += "#EXT-X-MEDIA-SEQUENCE:0\n";
 
         while (row = getRow()) {
             if (first) {  // bug see http://stackoverflow.com/questions/7595662/couchdb-list-api-cant-seem-to-return-plain-text
-                send(head);
+                send("#EXTM3U\n");
+                send("#EXT-X-TARGETDURATION:10\n");
+                send('#EXT-X-PLAYLIST-TYPE:EVENT\n');
+                if (row.value.startTime) {
+                    var dt = new Date(row.value.startTime).toISOString() ;
+                    send('##EXT-X-PROGRAM-DATE-TIME:' + dt + '\n');
+                }
+                send('#EXT-X-MEDIA-SEQUENCE:0\n');
                 first = false;
             }
-
             if (row.id.slice(0, prefix.length) == prefix) {
                 // this is the last one. This is the main recording.
                 if (row.value.stopComplete) {
@@ -71,7 +80,7 @@ var couchapp = require('couchapp')
                 }
             } else {
                 send('#EXTINF:10,\n'); // this means 10 seconds. We really should be getting this passed to us.
-                send('http://localhost:5983/dbg/' + row.id + '/' + row.value.attachmentName + '\n');
+                send(row.id + '/' + row.value.attachmentName + '\n');
             }
         }
 

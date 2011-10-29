@@ -135,7 +135,10 @@ public class SplitAudioRecorder implements AudioRecorder {
         m_outputFile = newsectiom;
         m_audioInputStream = m_audioInputStream.clone();
         new Recorder().start();
-        EventBus.publish(new RecordingSplitEvent(oldsection, recordingID));
+
+        long splitStartTime = System.currentTimeMillis() - splitTime;
+
+        EventBus.publish(new RecordingSplitEvent(oldsection, recordingID, splitStartTime));
     }
 
     /** Stops the recording.
@@ -150,7 +153,8 @@ public class SplitAudioRecorder implements AudioRecorder {
             isRecording = false;
             long now = System.currentTimeMillis();
             // final section
-            RecordingSplitEvent rse = new RecordingSplitEvent(section, recordingID);
+            long splitStartTime = now - splitTime;
+            RecordingSplitEvent rse = new RecordingSplitEvent(section, recordingID, splitStartTime);
             rse.setIsFinal(true);
             EventBus.publish(rse);
             return (now - recordingStart)/1000;

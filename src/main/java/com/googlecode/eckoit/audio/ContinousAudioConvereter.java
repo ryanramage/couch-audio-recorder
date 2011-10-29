@@ -66,7 +66,7 @@ public class ContinousAudioConvereter extends Thread implements  EventSubscriber
                     completedRecordings.add(recordingFinished);
                 } else {
                     Logger.getLogger(ContinousAudioConvereter.class.getName()).log(Level.INFO, "converting wav: " + wav.getAbsolutePath());
-                    doConversion(recordingFinished.getRecordingID(), wav);
+                    doConversion(recordingFinished.getRecordingID(), wav, recordingFinished.getStartTime());
                      
                 }
             } catch (InterruptedException ex) {
@@ -78,7 +78,7 @@ public class ContinousAudioConvereter extends Thread implements  EventSubscriber
         
     }
 
-    protected void doConversion(String recordingID, File wav) {
+    protected void doConversion(String recordingID, File wav, long sectionStartTime) {
         File mp3 = null;
         File ogg = null;
         try {
@@ -86,7 +86,7 @@ public class ContinousAudioConvereter extends Thread implements  EventSubscriber
             if (config.isStream()) {
                 File ts = convertToTs(recordingID, mp3);
 
-                StreamReadyEvent sre = new StreamReadyEvent(wav, "video/MP2T");
+                StreamReadyEvent sre = new StreamReadyEvent(wav, "video/MP2T", sectionStartTime);
                 sre.setAvailableToStream(mp3);
                 sre.setStreamDuration((int) (SplitAudioRecorder.getSplitTime() / 1000));
                 sre.setSegmentCount(getSegmentCount(wav));

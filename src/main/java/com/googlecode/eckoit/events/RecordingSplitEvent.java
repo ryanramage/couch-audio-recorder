@@ -15,10 +15,12 @@ public class RecordingSplitEvent {
     private File finishedFile;
     private boolean isFinal = false;
     private String recordingID;
+    private long startTime;
 
-    public RecordingSplitEvent(File finishedFile, String recordingID) {
+    public RecordingSplitEvent(File finishedFile, String recordingID, long startTime) {
         this.recordingID = recordingID;
         this.finishedFile = finishedFile;
+        this.startTime = startTime;
     }
 
     public File getFinishedFile() {
@@ -58,6 +60,13 @@ public class RecordingSplitEvent {
      */
     public void setRecordingID(String recordingID) {
         this.recordingID = recordingID;
+    }
+
+    /**
+     * @return the startTime
+     */
+    public long getStartTime() {
+        return startTime;
     }
 
 }
