@@ -17,6 +17,7 @@ var couchapp = require('couchapp')
       {from:"/", to:'index.html'}
     , {from:"/audio/:id/stream.m3u8", to:'_list/streamAudio/byStream.m3u8', query : {key: ":id"}}
     , {from:"/audio/:id/:doc/:attachment", to:'../../:doc/:attachment'}
+    , {from:"/audio/:doc/:attachment", to:'../../:doc/:attachment'}
     , {from:"/api", to:'../../'}
     , {from:"/api/*", to:'../../*'}
 

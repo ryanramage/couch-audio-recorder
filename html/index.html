@@ -8,16 +8,47 @@
 
   <script type="text/javascript" src="js/jquery-1.6.2.min.js"></script>
   <script type="text/javascript" src="js/jquery.couch.js"></script>
-  <script type="text/javascript" src="js/jquery.couchaudiorecorder.js"></script>
+ 
   <script type="text/javascript">
       $(function() {
           jQuery.couch.urlPrefix = 'api';
 
           var db = $.couch.db('');
-          $('.container').couchaudiorecorder({
-              db : db,
-              launchRecorderUrl : "test.jnlp"
-          });
+          db.view('couchaudiorecorder/recordings', {
+              include_docs: true,
+              descending: true,
+              success : function(data) {
+                  $.each(data.rows, function(i, row) {                      
+                      var $row = $('<tr class="row"></tr>');
+
+                      $row.append('<td>' + row.id +'</td>')
+
+
+                      if (row.doc.recordingState && row.doc.recordingState.startComplete) {
+                          var $stream = $(' <a href="audio/'+ row.id +'//stream.m3u8">stream</a>');
+                          $row.append($stream);
+                      }
+
+
+                      if (row.doc._attachments) {
+                          var $mp3 = $(' <a href="audio/'+ row.id +'/complete.mp3">mp3</a>');
+                          $row.append($mp3);
+                          var $ogg = $(' <a href="audio/'+ row.id +'/complete.ogg">ogg</a>');
+                          $row.append($ogg);
+                      }
+
+                      
+                      
+                      
+
+                      $('.list').append($row);
+                  })
+              }
+          })
+
+
+
+
       });
 
   </script>
@@ -26,11 +57,12 @@
 <body>
   <body>
       
+    <h2>Recordings</h2>
+    <a href="record.html">New Recording</a>
+    <table class="list">
 
-    <div class="container">
 
 
-
-    </div>
+    </table>
 </body>
 </html>
