@@ -5,8 +5,9 @@
 package com.googlecode.eckoit.audio;
 
 
+import com.github.couchapptakeout.events.ExitApplicationMessage;
 import com.googlecode.eckoit.events.ConversionFinishedEvent;
-import com.googlecode.eckoit.events.ExitApplicationMessage;
+
 
 import com.googlecode.eckoit.events.RecordingSplitEvent;
 import com.googlecode.eckoit.events.StreamReadyEvent;
@@ -49,6 +50,7 @@ public class ContinousAudioConvereter extends Thread implements  EventSubscriber
             @Override
             public void onEvent(ExitApplicationMessage t) {
                 running = false;
+                completedRecordings.add(new RecordingSplitEvent(null, null, 0));
             }
         });
 
@@ -62,18 +64,21 @@ public class ContinousAudioConvereter extends Thread implements  EventSubscriber
             try {
                 RecordingSplitEvent recordingFinished = completedRecordings.take();
                 File wav = recordingFinished.getFinishedFile();
-                if (tooFresh(wav)) {
-                    completedRecordings.add(recordingFinished);
-                } else {
-                    Logger.getLogger(ContinousAudioConvereter.class.getName()).log(Level.INFO, "converting wav: " + wav.getAbsolutePath());
-                    doConversion(recordingFinished.getRecordingID(), wav, recordingFinished.getStartTime());
-                     
+                if (wav != null) {
+                    if (tooFresh(wav)) {
+                        completedRecordings.add(recordingFinished);
+                    } else {
+                        Logger.getLogger(ContinousAudioConvereter.class.getName()).log(Level.INFO, "converting wav: " + wav.getAbsolutePath());
+                        doConversion(recordingFinished.getRecordingID(), wav, recordingFinished.getStartTime());
+
+                    }
                 }
             } catch (InterruptedException ex) {
                 Logger.getLogger(ContinousAudioConvereter.class.getName()).log(Level.SEVERE, null, ex);
             }
             sleep();
         }
+        System.out.println("Continous Audio Converter Shutdown");
         
         
     }

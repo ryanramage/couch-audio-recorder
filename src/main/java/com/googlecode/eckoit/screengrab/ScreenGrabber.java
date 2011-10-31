@@ -7,7 +7,8 @@ package com.googlecode.eckoit.screengrab;
 
 
 
-import com.googlecode.eckoit.events.ExitApplicationMessage;
+
+import com.github.couchapptakeout.events.ExitApplicationMessage;
 import com.googlecode.eckoit.events.ScreenGrabFinishEvent;
 import com.googlecode.eckoit.events.ScreenGrabStartEvent;
 import com.googlecode.eckoit.events.TargetClickedEvent;

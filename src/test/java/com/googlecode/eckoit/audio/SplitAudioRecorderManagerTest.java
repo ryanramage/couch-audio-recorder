@@ -5,7 +5,8 @@
 
 package com.googlecode.eckoit.audio;
 
-import com.googlecode.eckoit.events.ExitApplicationMessage;
+
+import com.github.couchapptakeout.events.ExitApplicationMessage;
 import java.io.File;
 import org.bushe.swing.event.EventBus;
 import org.junit.After;

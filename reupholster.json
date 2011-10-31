@@ -1,0 +1,21 @@
+{
+  couch : {
+    host : "localhost",
+    port : 5983,
+    db : "dbg"
+  },
+  test-couch : {
+    host : "ecko-it.iriscouch.com",
+    port : "5984",
+    db : "testsample",
+    username : "test"
+  },
+  stages : {
+    qa : {
+      host : "ecko-it.iriscouch.com",
+      port : "5984",
+      db : "sampleqa",
+      username : "test"
+    }
+  }
+}

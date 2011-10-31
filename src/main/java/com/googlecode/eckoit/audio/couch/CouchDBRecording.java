@@ -5,6 +5,8 @@
 
 package com.googlecode.eckoit.audio.couch;
 
+import com.github.couchapptakeout.events.ExitApplicationMessage;
+import com.googlecode.eckoit.audio.SplitAudioRecorder;
 import com.googlecode.eckoit.audio.SplitAudioRecorderConfiguration;
 import com.googlecode.eckoit.audio.SplitAudioRecorderManager;
 import com.googlecode.eckoit.events.ConversionFinishedEvent;
@@ -55,7 +57,13 @@ public class CouchDBRecording {
         this.connector = connector;
         this.recorderUUID = UUID.randomUUID().toString();
 
-
+        EventBus.subscribeStrongly(ExitApplicationMessage.class, new EventSubscriber<ExitApplicationMessage>() {
+            @Override
+            public void onEvent(ExitApplicationMessage t) {
+                running = false;
+                feed.cancel();
+            }
+        });
         EventBus.subscribeStrongly(RecordingStartedResponseEvent.class, new EventSubscriber<RecordingStartedResponseEvent>() {
             @Override
             public void onEvent(RecordingStartedResponseEvent t) {
@@ -169,23 +177,12 @@ public class CouchDBRecording {
     
     public void watch() {
         ChangesCommand cmd = new ChangesCommand.Builder().filter("couchaudiorecorder/recordings").build();
-
-
-        // added to ensure no kids left behind
-        Runtime.getRuntime().addShutdownHook(new Thread() {
-           @Override
-           public void run() {
-             running = false;
-             feed.cancel();
-           }
-          });
-
-
+        System.out.println("CouchDB recorder starting");
         while (running) {
             try {
                 feed = connector.changesFeed(cmd);
 
-                while (feed.isAlive()) {   
+                while (feed.isAlive() && running) {
                     DocumentChange change = feed.next();
                     System.out.println("Got a change!");
                     String docId = change.getId();
@@ -206,8 +203,14 @@ public class CouchDBRecording {
             }
         }
 
+        System.out.println("CouchDB recorder finished");
 
+    }
 
+    public void stop() {
+        System.out.println("Its over for you");
+        running = false;
+        feed.cancel();
     }
 
 
@@ -223,8 +226,18 @@ public class CouchDBRecording {
                 recordingState.put("recorderAvailable", recorderUUID);
                 connector.update(doc);
             }
+            return;
         }
-        if (isOurRecorder(doc)) {
+        if (state == RecordingState.RECORDER_AVAILABLE || state == RecordingState.UNKNOWN) {
+            // skipp
+            System.out.println("Skip");
+            if (currentRecordingDoc == null) {
+                System.out.println("Recording doc empty");
+            } else {
+                System.out.println("we are committed");
+            }
+        }
+        else if(isOurRecorder(doc)) {
 
             if (state == RecordingState.RECORDING_COMPLETE) {
                 currentRecordingDoc = null; // make us available
