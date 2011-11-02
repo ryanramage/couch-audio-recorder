@@ -34,7 +34,7 @@ public class SplitAudioRecorderManager  {
     SplitAudioRecorder recorder =  SplitAudioRecorder.getSingletonObject();
     ContinousAudioConvereter cac;
 
-    SplitAudioRecorderConfiguration config;
+    private SplitAudioRecorderConfiguration configuration;
 
 
     File rootDir;
@@ -52,12 +52,12 @@ public class SplitAudioRecorderManager  {
 
 
 
-    public SplitAudioRecorderManager(String ffmpeg, File rootDir, SplitAudioRecorderConfiguration config) {
+    public SplitAudioRecorderManager(String ffmpeg, File rootDir,  SplitAudioRecorderConfiguration config) {
         this.rootDir = rootDir;
         this.wavDir = mkDirIfNotExist(new File(rootDir, "wav"));
         this.intermediateDir = mkDirIfNotExist(new File(rootDir, "intermediate"));
         this.finalDir = mkDirIfNotExist(new File(rootDir, "final"));
-        this.config = config;
+        this.configuration = config;
 
         recorder.setConfig(config);
         recorder.setRoot(wavDir);
@@ -111,6 +111,11 @@ public class SplitAudioRecorderManager  {
             public void onEvent(RecordingStartClickedEvent t) {
                 currentRecordingID = t.getRecordingID();
                 try {
+                    if (t.getConfig() != null) {
+                        configuration = t.getConfig();
+                        cac.setConfig(configuration);
+                        recorder.setConfig(configuration);
+                    }
                     recorder.startRecording(currentRecordingID, mixer, gain);
                     EventBus.publish(new RecordingStartedResponseEvent(currentRecordingID));
                 } catch (LineUnavailableException ex) {
@@ -177,6 +182,13 @@ public class SplitAudioRecorderManager  {
      */
     public void setGain(float gain) {
         this.gain = gain;
+    }
+
+    /**
+     * @param config the config to set
+     */
+    public void setConfig(SplitAudioRecorderConfiguration config) {
+        this.configuration = config;
     }
 
 

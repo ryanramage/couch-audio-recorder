@@ -49,6 +49,22 @@
             var recordingSettings = {
                 _id : "com.eckoit.recording:" + new Date().getTime()
             }
+
+            recordingSettings.settings = {
+                stream : true,
+
+                wavSampleRate : 16000.0,
+                wavSampleSize : 16,
+
+                mp3Bitrate : 24000,
+                mp3Frequency : 16000,
+
+                oggBitrate : 24000,
+                oggFrequency : 22050
+
+            }
+
+
             if ( recordingOptions ) {
                 $.extend( recordingSettings, recordingOptions );
             }
@@ -81,7 +97,6 @@
 
             data.settings.db.openDoc(recordingId, {
                 success : function(doc) {
-                    console.log(data.settings);
                     initRecording(doc, data);
                 },
                 error : function() {
@@ -96,14 +111,12 @@
 
 
     function recorderNotFound(doc, data) {
-        console.log("none found");
         data.element.append('<p>Please start your <a href="'+data.settings.launchRecorderUrl+'">Audio Recorder Plugin</a> </p>');
     }
 
 
     function recorderFound(doc, data) {
         clearTimeout(data.findRecorderTimeoutID);
-        console.log("recorder found");
         createControlPanel(doc, data);
     }
 
@@ -150,7 +163,6 @@
     }
 
     function startRecordingConfirmed(doc, data) {
-        console.log('Start confirmed!');
         // ok, start the timer
         data.updateTimerDisplayID = setInterval(updateTimerDisplay, 1000, doc)
         // change the buttons
@@ -220,7 +232,6 @@
 
 
     function findRecorder(doc, data) {
-        console.log("Find recorder");
         if (!doc.recordingState) {
             doc.recordingState = {}
         }
@@ -235,7 +246,8 @@
 
 
     function stateEvent(doc, state, data) {
-        console.log(state);
+        data.element.trigger(state, doc);
+
         if (state == RecordingState.UNKNOWN) {
             // lets ask for a recorder
             findRecorder(doc, data);
@@ -261,12 +273,9 @@
         // subscribe!
         //var $changes = settings.db.changes(null, {filter : "couchaudiorecorder/recordings", id : doc._id});
         data.settings.db.changes(null, {filter : "couchaudiorecorder/recordings", id : doc._id}).onChange(function (change) {
-            console.log('Got change: ');
-            console.log(change)
             // get the doc
             data.settings.db.openDoc(doc._id, {
                 success : function(doc) {
-                    console.log("got doc");
                     var status = $.couchaudiorecorder.recordingStatus(doc);
                     stateEvent(doc, status, data);
                 }
@@ -315,8 +324,6 @@
 
     // bind to the jQuery object, dispatch names to methods
     $.fn.couchaudiorecorder = function(method) {
-        console.log("couchaudiorecorder");
-        console.log(method);
         if (methods[method]) {
             return methods[method].apply(this, Array.prototype.slice.call(arguments, 1));
         } else if (typeof method === 'object' || !method) {

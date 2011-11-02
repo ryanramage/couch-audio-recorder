@@ -191,6 +191,13 @@ public class ContinousAudioConvereter extends Thread implements  EventSubscriber
         completedRecordings.add(recordingSplit);
     }
 
+    /**
+     * @param config the config to set
+     */
+    public void setConfig(SplitAudioRecorderConfiguration config) {
+        this.config = config;
+    }
+
 
 
 }

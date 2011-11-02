@@ -28,7 +28,9 @@
           } else {
               div.couchaudiorecorder("newRecording");
           }
-
+          div.bind("startComplete", function(doc) {
+              console.log("Event: Recorder Started.............. ");
+          })
 
 
 

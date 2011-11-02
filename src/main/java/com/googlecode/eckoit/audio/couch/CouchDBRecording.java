@@ -22,6 +22,7 @@ import com.googlecode.eckoit.events.UploadingFinishedEvent;
 import com.googlecode.eckoit.events.UploadingStartedEvent;
 import java.io.File;
 import java.io.FileInputStream;
+import java.io.IOException;
 import java.math.BigDecimal;
 import java.util.Date;
 import java.util.UUID;
@@ -30,6 +31,8 @@ import java.util.logging.Logger;
 import org.bushe.swing.event.EventBus;
 import org.bushe.swing.event.EventSubscriber;
 import org.codehaus.jackson.JsonNode;
+import org.codehaus.jackson.JsonParseException;
+import org.codehaus.jackson.map.JsonMappingException;
 import org.codehaus.jackson.map.ObjectMapper;
 import org.codehaus.jackson.node.ObjectNode;
 import org.ektorp.AttachmentInputStream;
@@ -245,7 +248,12 @@ public class CouchDBRecording {
             }
             currentRecordingDoc = doc; // keeps the rev up
             if (state == RecordingState.START_ASKED) {
-                EventBus.publish(new RecordingStartClickedEvent(doc.get("_id").getTextValue()));
+                RecordingStartClickedEvent rsce = new RecordingStartClickedEvent(doc.get("_id").getTextValue());
+                SplitAudioRecorderConfiguration settings = loadConfig(doc);
+                if (settings != null) {
+                    rsce.setConfig(settings);
+                }
+                EventBus.publish(rsce);
             }
             if (state == RecordingState.STOP_ASKED) {
                 EventBus.publish(new RecordingStopClickedEvent());
@@ -253,6 +261,21 @@ public class CouchDBRecording {
         }
 
     }
+
+
+    protected SplitAudioRecorderConfiguration loadConfig(ObjectNode doc) {
+        JsonNode settings = doc.get("settings");
+        ObjectMapper mapper = new ObjectMapper();
+        try {
+            return mapper.readValue(settings, SplitAudioRecorderConfiguration.class);
+        } catch (Exception ex) {
+            return null;
+        } 
+    }
+
+
+
+
 
     protected boolean isOurRecorder(ObjectNode doc) {
         ObjectNode recordingState = getRecordingState(doc);
