@@ -8,6 +8,7 @@
 
   <script type="text/javascript" src="js/jquery-1.6.2.min.js"></script>
   <script type="text/javascript" src="js/jquery.couch.js"></script>
+  <script type="text/javascript" src="js/jquery.couchaudiorecorder2.js"></script>
  
   <script type="text/javascript">
       $(function() {
@@ -21,7 +22,15 @@
                   $.each(data.rows, function(i, row) {                      
                       var $row = $('<tr class="row"></tr>');
 
-                      $row.append('<td>' + row.id +'</td>')
+
+
+
+                      $row.append('<td><a href="record.html#' + row.id +'">'+ row.id +'</a></td>')
+
+
+                      var recordingDoc = row.doc;
+                      var status = $.couchaudiorecorder.recordingStatus(recordingDoc);
+                      $row.append('<td>' + status+'</td>')
 
 
                       if (row.doc.recordingState && row.doc.recordingState.startComplete) {

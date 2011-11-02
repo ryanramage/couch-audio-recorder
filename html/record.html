@@ -8,16 +8,31 @@
 
   <script type="text/javascript" src="js/jquery-1.6.2.min.js"></script>
   <script type="text/javascript" src="js/jquery.couch.js"></script>
-  <script type="text/javascript" src="js/jquery.couchaudiorecorder.js"></script>
+  <script type="text/javascript" src="js/jquery.couchaudiorecorder2.js"></script>
   <script type="text/javascript">
       $(function() {
           jQuery.couch.urlPrefix = 'api';
 
           var db = $.couch.db('');
-          $('.container').couchaudiorecorder({
+          var div = $('.container').couchaudiorecorder({
               db : db,
               launchRecorderUrl : "test.jnlp"
           });
+
+          var hash = location.hash;
+          
+          if (hash) {
+              var docId = hash.substring(1);
+
+              div.couchaudiorecorder("loadRecording", docId);
+          } else {
+              div.couchaudiorecorder("newRecording");
+          }
+
+
+
+
+          
       });
 
   </script>

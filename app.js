@@ -27,7 +27,7 @@ var couchapp = require('couchapp')
 
   ddoc.views.recordings = {
       map : function(doc) {
-          var prefix = "recording-";
+          var prefix = "com.eckoit.recording:";
           if (doc._id.slice(0, prefix.length) == prefix) {
               emit(doc._id, null);
           }
@@ -37,11 +37,11 @@ var couchapp = require('couchapp')
 
   ddoc.views['byStream.m3u8'] = {
       map: function(doc) {
-         var prefix = "recording-";
+         var prefix = "com.eckoit.recording:";
           if (doc._id.slice(0, prefix.length) == prefix) {
               emit(doc._id, doc.recordingState);
           }
-          if (doc.type && doc.type == "recording-segment" && doc.recording && doc._attachments) {
+          if (doc.type && doc.type == "com.eckoit.recordingSegment" && doc.recording && doc._attachments) {
               for (first in doc._attachments) break;
               var attachmentInfo = doc._attachments[first];
               var data = {_id: doc._id, attachmentName : first, attachmentInfo: attachmentInfo};
@@ -55,7 +55,7 @@ var couchapp = require('couchapp')
 
   ddoc.lists.streamAudio = function(head, req) {
 
-        var prefix = "recording-";
+        var prefix = "com.eckoit.recording:";
 
         start({ "headers" : {"Content-type" : "application/vnd.apple.mpegurl"}});
         var first = true;
@@ -88,7 +88,7 @@ var couchapp = require('couchapp')
   }
 
   ddoc.filters.recordings = function(doc, req) {
-      var prefix = "recording-";
+      var prefix = "com.eckoit.recording:";
       if (doc._id.slice(0, prefix.length) == prefix) {
           if (req.query.id) {
              if (req.query.id == doc._id) {

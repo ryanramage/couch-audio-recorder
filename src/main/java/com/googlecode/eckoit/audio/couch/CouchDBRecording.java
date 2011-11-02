@@ -46,7 +46,7 @@ public class CouchDBRecording {
 
     private CouchDbConnector connector;
     private ChangesFeed feed;
-    private String recordingDocIdPrefex = "recording-";
+    private String recordingDocIdPrefex = "com.eckoit.recording:";
     private String recorderUUID;
 
     private ObjectNode currentRecordingDoc;
@@ -144,7 +144,7 @@ public class CouchDBRecording {
                         // create a doc
                         ObjectMapper map = new ObjectMapper();
                         ObjectNode node = map.createObjectNode();
-                        node.put("type", "recording-segment");
+                        node.put("type", "com.eckoit.recordingSegment");
                         node.put("recording", currentRecordingDoc.get("_id").getTextValue());
                         node.put("startTime", t.getStartTime());
                         connector.create(node);
