@@ -86,6 +86,8 @@
             data.settings.db.saveDoc(doc, {
                 success : function(){
                     initRecording(doc, data);
+                    var state = $.couchaudiorecorder.recordingStatus(doc);
+                    stateEvent(doc, state, data);
                 }
             })
         },
@@ -98,6 +100,9 @@
             data.settings.db.openDoc(recordingId, {
                 success : function(doc) {
                     initRecording(doc, data);
+                    // get the ui in the right state
+                    makeUIRightForPreviousRecording(doc, data);
+
                 },
                 error : function() {
                     $.error( 'Unable to load recording: ' + recordingId );
@@ -109,9 +114,32 @@
     }
 
 
+    function makeUIRightForPreviousRecording(doc, data) {
+        var state = $.couchaudiorecorder.recordingStatus(doc);
+        if (state == RecordingState.RECORDER_AVAILABLE || state == RecordingState.UNKNOWN) {
+            stateEvent(doc, state, data);
+        } else {
+            createControlPanel(doc, data);
+            if (state == RecordingState.START_COMPLETE) {
+                startRecordingConfirmed(doc, data);
+            }
+            if (state == RecordingState.STOP_COMPLETE) {
+                uiStopRecording() ;
+            }
+            if (state == RecordingState.RECORDING_COMPLETE) {
+                uiStopRecording() ;
+                uiRecordingFinished();
+                
+            }
+        }
+        
+    }
+
+
+
 
     function recorderNotFound(doc, data) {
-        data.element.append('<p>Please start your <a href="'+data.settings.launchRecorderUrl+'">Audio Recorder Plugin</a> </p>');
+        data.element.html('<p>Please start your <a href="'+data.settings.launchRecorderUrl+'">Audio Recorder Plugin</a> </p>');
     }
 
 
@@ -162,12 +190,17 @@
         })
     }
 
-    function startRecordingConfirmed(doc, data) {
-        // ok, start the timer
-        data.updateTimerDisplayID = setInterval(updateTimerDisplay, 1000, doc)
+    function uiStartRecordingConfirmed() {
         // change the buttons
         $('.couchaudiorecorder button.start').attr('disabled', 'disabled');
         $('.couchaudiorecorder button.stop').removeAttr("disabled");
+    }
+
+
+    function startRecordingConfirmed(doc, data) {
+        // ok, start the timer
+        data.updateTimerDisplayID = setInterval(updateTimerDisplay, 1000, doc)
+        uiStartRecordingConfirmed();
     }
 
     var timeFormat = {
@@ -201,9 +234,14 @@
     }
 
 
-    function stopRecording(doc, data) {
+    function uiStopRecording() {
         $('.couchaudiorecorder button.stop').attr('disabled', 'disabled');
         $('.couchaudiorecorder div.status').text('Stopping...');
+    }
+
+
+    function stopRecording(doc, data) {
+        uiStopRecording();
         // note this doc, is probably stale.
         doc = data.settings.db.openDoc(doc._id, {
             success: function(doc) {
@@ -221,13 +259,23 @@
     }
 
     function stopRecordingConfirmed(doc, data) {
-
+        // these are just in case we did not init the stop event
+        uiStopRecording();
         $('.couchaudiorecorder div.status').text('Finishing...');
+        clearInterval(data.updateTimerDisplayID);
     }
 
 
-    function recordingCompleteConfirmed(doc, data) {
+    function uiRecordingFinished() {
         $('.couchaudiorecorder div.status').text('Recording Complete!');
+    }
+
+    function recordingCompleteConfirmed(doc, data) {
+        uiStopRecording();
+        uiRecordingFinished(); // seems lame, but to be complete.
+        // these are just in case we did not init the stop event
+        
+        clearInterval(data.updateTimerDisplayID);
     }
 
 
@@ -281,8 +329,7 @@
                 }
             })
         });
-        var state = $.couchaudiorecorder.recordingStatus(doc);
-        stateEvent(doc, state, data);
+
     }
 
 
