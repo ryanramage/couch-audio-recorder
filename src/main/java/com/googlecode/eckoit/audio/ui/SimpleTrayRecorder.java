@@ -1,0 +1,277 @@
+/*
+ * To change this template, choose Tools | Templates
+ * and open the template in the editor.
+ */
+
+package com.googlecode.eckoit.audio.ui;
+
+import com.github.couchapptakeout.events.ExitApplicationMessage;
+import com.googlecode.eckoit.audio.SplitAudioRecorderConfiguration;
+import com.googlecode.eckoit.audio.SplitAudioRecorderManager;
+import com.googlecode.eckoit.audio.couch.CouchDBRecording;
+import com.googlecode.eckoit.events.RecorderJustStartedWithARecordingDocRequested;
+import com.googlecode.eckoit.events.RecordingStartedResponseEvent;
+import com.googlecode.eckoit.events.RecordingStoppedResponseEvent;
+import com.googlecode.eckoit.util.FFMpegSetterUpper;
+import java.awt.AWTException;
+import java.awt.BorderLayout;
+import java.awt.Dimension;
+import java.awt.Image;
+import java.awt.MenuItem;
+import java.awt.PopupMenu;
+import java.awt.SystemTray;
+import java.awt.Toolkit;
+import java.awt.TrayIcon;
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
+import java.io.File;
+import java.net.MalformedURLException;
+import java.net.URL;
+import java.util.logging.Level;
+import java.util.logging.Logger;
+import javax.swing.ImageIcon;
+import javax.swing.JFrame;
+import org.apache.commons.lang.StringUtils;
+import org.bushe.swing.event.EventBus;
+import org.bushe.swing.event.EventSubscriber;
+import org.ektorp.CouchDbConnector;
+import org.ektorp.CouchDbInstance;
+import org.ektorp.http.HttpClient;
+import org.ektorp.http.StdHttpClient;
+import org.ektorp.impl.StdCouchDbConnector;
+import org.ektorp.impl.StdCouchDbInstance;
+
+/**
+ *
+ * @author ryan
+ */
+public class SimpleTrayRecorder {
+
+
+    private TrayIcon trayIcon;
+    private CouchDbConnector connector;
+    private File workingDir;
+    SplitAudioRecorderManager recorder;
+    CouchDBRecording dbRecorder;
+    Image normal;
+    Image on;
+    JFrame controlPanel;
+
+    MenuItem showPanel;
+
+
+    public SimpleTrayRecorder(CouchDbConnector conn, File working, String designDoc) {
+        this.connector = conn;
+        this.workingDir = working;
+
+        normal = createImage("/record_icon.png");
+        on = createImage("/record_icon_on.png");
+
+        SystemTray tray = SystemTray.getSystemTray();
+        if (!SystemTray.isSupported()) {
+            throw new RuntimeException("Tray Not Supported");
+        }
+        trayIcon = new TrayIcon(normal, "Couch Audio Recorder");
+        final PopupMenu popup = createMenu();
+
+        trayIcon.setPopupMenu(popup);
+        try {
+            tray.add(trayIcon);
+            //registerEvents();
+        } catch (AWTException e) {
+
+        }
+
+        FFMpegSetterUpper fu = new FFMpegSetterUpper();
+        String ffmpeg = fu.ffmpegLocation(workingDir, connector, designDoc);
+
+
+        SplitAudioRecorderConfiguration config = new SplitAudioRecorderConfiguration();
+        config.setStream(true);
+        recorder = new SplitAudioRecorderManager(ffmpeg, workingDir, config);
+        dbRecorder = new CouchDBRecording(connector);
+
+
+        // added to ensure no kids left behind
+        Runtime.getRuntime().addShutdownHook(new Thread() {
+           @Override
+           public void run() {
+             EventBus.publish(new ExitApplicationMessage());
+           }
+          });        
+
+
+        new Thread(new Runnable() {
+            @Override
+            public void run() {
+                dbRecorder.watch();
+            }
+        }).start();
+        watchForRecordingChanges();
+
+
+        controlPanel = new JFrame();
+        SimpleRecordPanel panel = new SimpleRecordPanel();
+        controlPanel.getContentPane().setLayout(new BorderLayout());
+        controlPanel.getContentPane().add(panel, BorderLayout.CENTER);
+
+        controlPanel.setSize(250, 150);
+        Dimension screen = Toolkit.getDefaultToolkit().getScreenSize();
+        controlPanel.setLocation( (screen.width/2) - (250/2) , (screen.height/2) - (150/2) );
+        addShowPanelMenuItem();
+    }
+
+
+    protected void watchForRecordingChanges() {
+        EventBus.subscribeStrongly(RecordingStartedResponseEvent.class, new EventSubscriber<RecordingStartedResponseEvent>() {
+            @Override
+            public void onEvent(RecordingStartedResponseEvent t) {
+                // change to on icon
+                trayIcon.setImage(on);
+                // add menu item to get control panel
+                
+                
+
+            }
+        });
+        EventBus.subscribeStrongly(RecordingStoppedResponseEvent.class, new EventSubscriber<RecordingStoppedResponseEvent>() {
+            @Override
+            public void onEvent(RecordingStoppedResponseEvent t) {
+                //trayIcon.getPopupMenu().remove(showPanel);
+                trayIcon.setImage(normal);
+            }
+        });
+
+        
+
+    }
+
+
+
+    private PopupMenu createMenu() {
+        final PopupMenu popup = new PopupMenu("Couch Audio Recorder");
+        {
+            MenuItem item = new MenuItem("Exit");
+            item.addActionListener(new ActionListener() {
+                @Override
+                public void actionPerformed(ActionEvent e) {
+                    EventBus.publish(new ExitApplicationMessage());
+                    try {
+                        Thread.sleep(1000);
+                        System.exit(0);
+                    } catch (Exception ex) {
+                    }
+                    
+                }
+            });
+            popup.add(item);
+
+        }
+        return popup;
+    }
+
+
+    private void addShowPanelMenuItem() {
+        if(showPanel == null) {
+            showPanel = new MenuItem("Recording Panel");
+            showPanel.addActionListener(new ActionListener() {
+                @Override
+                public void actionPerformed(ActionEvent ae) {
+                    controlPanel.setVisible(true);
+                }
+            });
+        }
+        trayIcon.getPopupMenu().add(showPanel);
+    }
+
+
+
+
+
+
+
+
+    //Obtain the image URL
+    protected static Image createImage(String path) {
+        URL imageURL = SimpleTrayRecorder.class.getResource(path);
+
+        if (imageURL == null) {
+            System.err.println("Resource not found: " + path);
+            return null;
+        } else {
+            return (new ImageIcon(imageURL)).getImage();
+        }
+
+    }
+
+
+     public static void main(String args[]) {
+        try {
+
+
+            // arg[0] url
+            // arg[1] recordingDoc optional
+
+            String url = "http://localhost:5983";
+            String dbName  = "dbg";
+            String recordingDocId = null;
+            try {
+                url = getUrl(args[0]);
+                dbName  = getDb(args[0]);
+            } catch (Exception e) {
+
+            }
+
+            if (StringUtils.isNotEmpty(args[1])) {
+                recordingDocId = args[1];
+            }
+
+            // my machine
+            HttpClient client = new StdHttpClient.Builder().url(url).build();
+            CouchDbInstance db = new StdCouchDbInstance(client);
+            CouchDbConnector connector = new StdCouchDbConnector(dbName, db);
+
+            File dir = getWorkingDir();
+            SimpleTrayRecorder str = new SimpleTrayRecorder(connector, dir, "_design/couchaudiorecorder");
+
+            if (recordingDocId != null) {
+                System.out.println("There is a recording doc: " + recordingDocId);
+                EventBus.publish(new RecorderJustStartedWithARecordingDocRequested(recordingDocId));
+            }
+
+
+        } catch (Exception ex) {
+            Logger.getLogger(SimpleTrayRecorder.class.getName()).log(Level.SEVERE, null, ex);
+        }
+
+
+    }
+
+
+
+    protected static String getUrl(String str) throws MalformedURLException {
+        URL url = new URL(str);
+        return url.getProtocol() + "://" + url.getHost() + ":" + url.getPort();
+
+    }
+
+
+    protected static String getDb(String str) throws MalformedURLException {
+        URL url = new URL(str);
+        return url.getPath();
+    }
+
+
+    public static File getWorkingDir() {
+       String userHome = System.getProperty("user.home");
+       File homeDir = new File(userHome, ".couchaudiorecorder");
+       if (!homeDir.exists()) {
+           homeDir.mkdirs();
+       }
+       return homeDir;
+    }
+
+
+
+
+}

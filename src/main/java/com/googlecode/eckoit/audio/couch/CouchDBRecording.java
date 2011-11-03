@@ -11,6 +11,7 @@ import com.googlecode.eckoit.audio.SplitAudioRecorderConfiguration;
 import com.googlecode.eckoit.audio.SplitAudioRecorderManager;
 import com.googlecode.eckoit.events.ConversionFinishedEvent;
 import com.googlecode.eckoit.events.PostProcessingStartedEvent;
+import com.googlecode.eckoit.events.RecorderJustStartedWithARecordingDocRequested;
 import com.googlecode.eckoit.events.RecordingCompleteEvent;
 import com.googlecode.eckoit.events.RecordingSplitEvent;
 import com.googlecode.eckoit.events.RecordingStartClickedEvent;
@@ -72,8 +73,19 @@ public class CouchDBRecording {
             public void onEvent(RecordingStartedResponseEvent t) {
 
                 // get the current doc
-                currentRecordingDoc = connector.get(ObjectNode.class, t.getRecordingID());
-
+                try {
+                    currentRecordingDoc = connector.get(ObjectNode.class, t.getRecordingID());
+                } catch(Exception e) {
+                    // if we are here, then we have come from an internal request, we need to create the doc
+                    ObjectMapper mapper = new ObjectMapper();
+                    currentRecordingDoc = mapper.createObjectNode();
+                    currentRecordingDoc.put("_id", t.getRecordingID());
+                    ObjectNode recordingState = currentRecordingDoc.putObject("recordingState");
+                    long dt = System.currentTimeMillis();
+                    recordingState.put("recorderAsked", dt);
+                    recordingState.put("recorderAvailable", recorderUUID);
+                    recordingState.put("startAsked", dt);
+                }
 
                 ObjectNode recordingState = getRecordingState(currentRecordingDoc);
                 recordingState.put("startComplete", new Date().getTime());
@@ -166,6 +178,25 @@ public class CouchDBRecording {
                         System.out.println(e.getMessage());
                     }
                 }
+            }
+        });
+
+
+        EventBus.subscribeStrongly(RecorderJustStartedWithARecordingDocRequested.class, new EventSubscriber<RecorderJustStartedWithARecordingDocRequested>() {
+            @Override
+            public void onEvent(RecorderJustStartedWithARecordingDocRequested t) {
+                ObjectNode testDoc = connector.get(ObjectNode.class, t.getRecordingDocId());
+                RecordingState state = detectState(testDoc);
+                System.out.println("The state of the requested doc: " + state.name());
+                if (state == RecordingState.START_ASKED) {
+                    processRecordingDoc(testDoc);
+                } else if (state == RecordingState.RECORDER_AVAILABLE || state == RecordingState.RECORDER_ASKED) {
+                    // ok we will update with our id,
+                    ObjectNode recordingState = getRecordingState(testDoc);
+                    recordingState.put("recorderAvailable", recorderUUID);
+                    connector.update(testDoc);
+                }
+                // no idea how to handle the other states right now.
             }
         });
 

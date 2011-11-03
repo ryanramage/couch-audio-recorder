@@ -22,8 +22,11 @@ import com.googlecode.eckoit.events.RecordingStoppedResponseEvent;
 import com.googlecode.eckoit.events.UploadingFinishedEvent;
 import com.googlecode.eckoit.events.UploadingStartedEvent;
 import java.awt.BorderLayout;
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
 import java.io.File;
 import java.util.Date;
+import javax.swing.Timer;
 import java.util.UUID;
 import javax.swing.JFrame;
 import org.bushe.swing.event.EventBus;
@@ -34,6 +37,11 @@ import org.bushe.swing.event.EventSubscriber;
  * @author ryan
  */
 public class SimpleRecordPanel extends javax.swing.JPanel {
+
+    Timer updateLength;
+    long startTime = 0;
+    long endTime = 0;
+    String defaultTimerString = "00:00:00";
 
     /** Creates new form SimpleRecordPanel */
     public SimpleRecordPanel() {
@@ -46,6 +54,9 @@ public class SimpleRecordPanel extends javax.swing.JPanel {
             public void onEvent(RecordingStartedResponseEvent t) {
                 startButton.setEnabled(false);
                 stopButton.setEnabled(true);
+                startTime = System.currentTimeMillis();
+                endTime = 0;
+                updateLength.start();
             }
         });
 
@@ -54,6 +65,8 @@ public class SimpleRecordPanel extends javax.swing.JPanel {
             public void onEvent(RecordingStoppedResponseEvent t) {
                 startButton.setEnabled(true);
                 stopButton.setEnabled(false);
+                updateLength.stop();
+                endTime = System.currentTimeMillis();
             }
         });
 
@@ -92,7 +105,7 @@ public class SimpleRecordPanel extends javax.swing.JPanel {
             }
         });
 
-
+        updateLength = new Timer(1000, new updateLengthThread());
     }
 
     /** This method is called from within the constructor to
@@ -189,7 +202,7 @@ public class SimpleRecordPanel extends javax.swing.JPanel {
     }//GEN-LAST:event_stopButtonActionPerformed
 
     private void startButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_startButtonActionPerformed
-        EventBus.publish(new RecordingStartClickedEvent(new Date().getTime() + "" ));
+        EventBus.publish(new RecordingStartClickedEvent("com.eckoit.recording:" + new Date().getTime() + "" ));
     }//GEN-LAST:event_startButtonActionPerformed
 
 
@@ -203,35 +216,22 @@ public class SimpleRecordPanel extends javax.swing.JPanel {
 
 
 
-    public static void main(String args[]) {
-        java.awt.EventQueue.invokeLater(new Runnable() {
-            public void run() {
-
-                JFrame f = new JFrame();
-                SimpleRecordPanel panel = new SimpleRecordPanel();
-                f.getContentPane().setLayout(new BorderLayout());
-                f.getContentPane().add(panel, BorderLayout.CENTER);
-
-
-                // my machine
-                String ffmpeg = "/Applications/eckoit/lib/ffmpeg";
-                File file = new File("target");
-
-                SplitAudioRecorderConfiguration config = new SplitAudioRecorderConfiguration();
-                config.setStream(true);
-                SplitAudioRecorderManager recorder = new SplitAudioRecorderManager(ffmpeg, file,config);
-                
-
-
-                f.addWindowListener(new java.awt.event.WindowAdapter() {
-                    public void windowClosing(java.awt.event.WindowEvent e) {
-                        System.exit(0);
-                    }
-                });
-                f.setVisible(true);
+   private class updateLengthThread implements ActionListener {
+        public void actionPerformed(ActionEvent e) {
+            if (startTime == 0) {
+                timerLabel.setText(defaultTimerString);
+                return;
             }
-        });
+            long end = endTime;
+            if (end == 0) {
+                end = System.currentTimeMillis();
+            }
+            long milli_duration = end - startTime;
+            timerLabel.setText(formatMillisecs(milli_duration));
+        }
     }
-
+    private String formatMillisecs(long milli) {
+        return TimeUtils.formatTimeBySec(milli/1000, false);
+    }
 
 }

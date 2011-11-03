@@ -19,7 +19,7 @@
                     </descriptorRefs>
                     <archive>
                         <manifest>
-                            <mainClass>com.googlecode.eckoit.tray.App</mainClass>
+                            <mainClass>com.googlecode.eckoit.audio.ui.SimpleTrayRecorder</mainClass>
                         </manifest>
                     </archive>
                 </configuration>
@@ -58,7 +58,7 @@
                     <!--inputTemplateResourcePath>${project.basedir}/src/</inputTemplateResourcePath>
                     <inputTemplate>jnlp/template.vm</inputTemplate-->
                     <outputFile>test.jnlp</outputFile>
-                    <mainClass>com.googlecode.eckoit.tray.App</mainClass>
+                    <mainClass>com.googlecode.eckoit.audio.ui.SimpleTrayRecorder</mainClass>
                   </jnlp>
 
                   <!-- SIGNING -->

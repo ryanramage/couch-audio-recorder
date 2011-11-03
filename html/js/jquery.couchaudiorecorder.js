@@ -118,7 +118,11 @@
         var state = $.couchaudiorecorder.recordingStatus(doc);
         if (state == RecordingState.RECORDER_AVAILABLE || state == RecordingState.UNKNOWN) {
             stateEvent(doc, state, data);
-        } else {
+        }
+        else if (state == RecordingState.RECORDER_ASKED) {
+            recorderNotFound(doc, data);
+        }
+        else {
             createControlPanel(doc, data);
             if (state == RecordingState.START_COMPLETE) {
                 startRecordingConfirmed(doc, data);
