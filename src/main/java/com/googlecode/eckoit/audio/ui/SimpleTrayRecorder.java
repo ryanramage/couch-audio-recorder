@@ -208,23 +208,54 @@ public class SimpleTrayRecorder {
      public static void main(String args[]) {
         try {
 
+            System.out.println("There are " + args.length + " args");
+            for (String arg : args) {
+                System.out.println("Arg: " + arg);
+            }
+
+            // hack attack. webstart is messing our args. for now we pass one
+
 
             // arg[0] url
             // arg[1] recordingDoc optional
 
             String url = "http://localhost:5983";
-            String dbName  = "dbg";
+            String dbName  = "dbg";            
             String recordingDocId = null;
-            try {
-                url = getUrl(args[0]);
-                dbName  = getDb(args[0]);
-            } catch (Exception e) {
 
+            if (args.length == 2) {
+                // clean and easy
+                try {
+                    url = getUrl(args[0]);
+                    dbName  = getDb(args[0]);
+                } catch (Exception e) {
+
+                }
+
+                if (args.length > 1 && StringUtils.isNotEmpty(args[1])) {
+                    recordingDocId = args[1];
+                }
+            } else if (args.length == 1) {
+                args = args[0].split(" ");
+                try {
+                    url = getUrl(args[0]);
+                    dbName  = getDb(args[0]);
+                } catch (Exception e) {
+
+                }
+
+                if (args.length > 1 && StringUtils.isNotEmpty(args[1])) {
+                    recordingDocId = args[1];
+                }
             }
 
-            if (StringUtils.isNotEmpty(args[1])) {
-                recordingDocId = args[1];
-            }
+
+            System.out.println("Url: " + url);
+            System.out.println("db: " + dbName);
+            System.out.println("doc: " + recordingDocId);
+
+
+
 
             // my machine
             HttpClient client = new StdHttpClient.Builder().url(url).build();

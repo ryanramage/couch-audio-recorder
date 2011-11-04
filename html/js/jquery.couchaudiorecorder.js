@@ -29,7 +29,7 @@
                     $.error( 'please provide a db in the options' );
                 }
                 var settings = {
-                    launchRecorderUrl : "recorder.jnlp"
+                    launchRecorderUrl : "../_show/recorder.jnlp"
                 }
 
                 $.extend( settings, options );
@@ -50,19 +50,7 @@
                 _id : "com.eckoit.recording:" + new Date().getTime()
             }
 
-            recordingSettings.settings = {
-                stream : true,
-
-                wavSampleRate : 16000.0,
-                wavSampleSize : 16,
-
-                mp3Bitrate : 24000,
-                mp3Frequency : 16000,
-
-                oggBitrate : 24000,
-                oggFrequency : 22050
-
-            }
+            recordingSettings.settings = $.couchaudiorecorder.quality.high;
 
 
             if ( recordingOptions ) {
@@ -143,7 +131,12 @@
 
 
     function recorderNotFound(doc, data) {
-        data.element.html('<p>Please start your <a href="'+data.settings.launchRecorderUrl+'">Audio Recorder Plugin</a> </p>');
+        var url = data.settings.launchRecorderUrl;
+        if (doc._id) {
+            url += "?recording=" + doc._id;
+        }
+
+        data.element.html('<p>Please start your <a href="'+url+'">Audio Recorder Plugin</a> </p>');
     }
 
 
@@ -368,6 +361,44 @@
 
             }
             return RecordingState.UNKNOWN;
+        },
+        quality : {
+            low : {
+                stream : true,
+
+                wavSampleRate : 16000.0,
+                wavSampleSize : 16,
+
+                mp3Bitrate : 24000,
+                mp3Frequency : 16000,
+
+                oggBitrate : 24000,
+                oggFrequency : 22050
+            },
+            med : {
+                stream : true,
+
+                wavSampleRate : 44100.0,
+                wavSampleSize : 16,
+
+                mp3Bitrate : 48000,
+                mp3Frequency : 22050,
+
+                oggBitrate : 24000,
+                oggFrequency : 22050
+            },
+            high : {
+                stream : true,
+
+                wavSampleRate : 44100.0,
+                wavSampleSize : 16,
+
+                mp3Bitrate : 128000,
+                mp3Frequency : 44100,
+
+                oggBitrate : 24000,
+                oggFrequency : 22050
+            }
         }
     };
 

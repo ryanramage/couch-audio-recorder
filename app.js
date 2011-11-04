@@ -104,7 +104,47 @@ var couchapp = require('couchapp')
 
 
 
+ ddoc.shows['recorder.jnlp'] = function(doc, req) {
 
+	var ddoc2 = req.path[2];
+	var codebase = 'http://' + req.headers.Host + '/' + req.path[0] + '/_design/'+ddoc2 +'/';
+	var defaults = { codebase : codebase, href : '_show/recorder.jnlp?recording=' + req.query.recording };
+	var result = '<?xml version=\"1.0\" encoding=\"utf-8\"?>';
+	result += '<jnlp spec=\"1.5+\" codebase=\"'+codebase+'\" href=\"'+defaults.href+'\">';
+	result += '<information><title>Couch Audio Recorder</title><vendor>Eckoit Inc</vendor><homepage>http://eckoit.com</homepage><description kind=\"one-line\">A audio recorder for your couch.</description>';
+
+
+        splash = '../../skin/noun_project_171_1.png';
+        icon = '../../skin/record_icon.png'
+	
+	result += '<icon kind=\"splash\" href=\"'+ splash +'\"/>';
+	result += '<icon href=\"' + icon + '\"/>';
+	result += ' <offline-allowed/> ';
+	result += ' <shortcut online=\"false\">';
+	result += '   <desktop/>';
+	result += '   <menu submenu=\"Couch Audio Recorder"/>';
+	result += ' </shortcut>';
+	result += '</information>';
+	result += '  <security><all-permissions/></security>';
+	result += '  <resources> <j2se version=\"1.6+\" initial-heap-size=\"32m\" max-heap-size=\"128m\" /> ';
+	String.prototype.endsWith = function(suffix) { return this.indexOf(suffix, this.length - suffix.length) !== -1; };
+	for (var a in this._attachments) { if (a.endsWith('.jar')) { var main = ''; if (a == 'couch-audio-recorder-1.0-SNAPSHOT.jar') main = 'main=\"true\"'; result += ' <jar href=\"'+a+'\" '+main+'/> '; } }
+	result += '</resources>';
+	result += '  <application-desc main-class=\"com.googlecode.eckoit.audio.ui.SimpleTrayRecorder\">';
+
+
+        // this is hacked up. for some reason webstart is not passing two args,
+        // so we are doing a space delimited
+        var arg = 'http://' + req.headers.Host + '/' + req.userCtx.db;
+
+        result += '  <argument>'+ arg + '</argument>';
+        result += '  <argument>'+ req.query.recording + '</argument>';
+ 
+
+	result += ' </application-desc>';
+	result += '</jnlp>';
+	return { 'headers' : {'Content-Type' : 'application/x-java-jnlp-file'}, 'body' :  result }
+ }
 
 
 
