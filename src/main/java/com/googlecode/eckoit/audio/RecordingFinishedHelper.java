@@ -16,6 +16,8 @@ import java.util.Arrays;
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.List;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import org.apache.commons.io.IOUtils;
 
 /**
@@ -26,11 +28,15 @@ public class RecordingFinishedHelper {
 
     File recordingInProgressDir;
     File recordingCompleteDir;
+    String ffmpegComand;
+    
 
 
-    public RecordingFinishedHelper(File recordingInProgressDir, File recordingCompleteDir) {
+    public RecordingFinishedHelper(File recordingInProgressDir, File recordingCompleteDir, String ffmpeg) {
         this.recordingInProgressDir = recordingInProgressDir;
         this.recordingCompleteDir = recordingCompleteDir;
+        this.ffmpegComand = ffmpeg;
+
     }
 
     public File[] recordingFinished(String recordingId) throws FileNotFoundException, IOException {
@@ -41,15 +47,24 @@ public class RecordingFinishedHelper {
 
         File[] mp3s = findFiles(parent, ".mp3");
         List<File> sortedMp3s = sortFilesNumerically(mp3s);
-        File finalMp3 = new File(recordingCompleteDir, recordingId + ".mp3");
-        mergeFiles(finalMp3, sortedMp3s);
+        File finalMp3_bad = new File(recordingInProgressDir, recordingId + ".mp3.tmp");
+        mergeFiles(finalMp3_bad, sortedMp3s);
+
+        File finalMp3_good = new File(recordingCompleteDir, recordingId + ".mp3");
+        try {
+            polishMp3(finalMp3_bad, finalMp3_good);
+        } catch (Exception ex) {
+            Logger.getLogger(RecordingFinishedHelper.class.getName()).log(Level.SEVERE, null, ex);
+            finalMp3_good = finalMp3_bad; // bad is the new good, for now
+        }
+
 
         File[] oggs = findFiles(parent, ".ogg");
         List<File> sortedOggs = sortFilesNumerically(oggs);
         File finalOgg = new File(recordingCompleteDir, recordingId + ".ogg");
         mergeFiles(finalOgg, sortedOggs);
 
-        return new File[] {finalMp3, finalOgg};
+        return new File[] {finalMp3_good, finalOgg};
         
     }
 
@@ -103,6 +118,16 @@ public class RecordingFinishedHelper {
             in.close();
         }
         fos.close();
+
+
+        // fix the file
+
+
+    }
+
+    private void polishMp3(File finalMp3_bad, File finalMp3_good) throws InterruptedException, IOException {
+        FFMpegConverter converter = new FFMpegConverter(ffmpegComand, FFMpegConverter.ENCODER_MP3);
+        converter.fixMP3(finalMp3_bad, finalMp3_good);
     }
 
 

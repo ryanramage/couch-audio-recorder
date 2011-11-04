@@ -65,7 +65,16 @@ public class FFMpegConverter implements AudioEncoder {
         }
     }
 
-
+    public void fixMP3(File mp3, File outputfile) throws InterruptedException, IOException {
+        ProcessBuilder pb = new ProcessBuilder(new String[] {ffmpegFullCommand, "-i", mp3.getAbsolutePath(), "-y", "-acodec", "copy", outputfile.getAbsolutePath()} );
+        pb.redirectErrorStream(true);
+        Process p = pb.start();
+        InputStream stream = p.getInputStream();
+        int chr = stream.read();
+        while (chr != -1) {
+            chr = stream.read();
+        }
+    }
 
     public void convertURL(String url, long bitrate, long frequency, File outputfile, boolean forceOverwrite) throws InterruptedException, IOException {
         if (outputfile.exists() && !forceOverwrite) {

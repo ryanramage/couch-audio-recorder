@@ -132,7 +132,7 @@ public class ContinousAudioConvereter extends Thread implements  EventSubscriber
         long frequency = config.getMp3Frequency();
 
         File mp3Temp = getFileForDocument(recordingID, wav, ".mp3.tmp");
-        FFMpegConverter converter = new FFMpegConverter(ffmpegcmd, FFMpegConverter.ENCODER_MP3);
+        FFMpegConverter converter = new FFMpegConverter(getFfmpegcmd(), FFMpegConverter.ENCODER_MP3);
         //System.out.println("Converting to mp3");
         converter.convert(wav, bitrate, frequency, mp3Temp, true);
         //System.out.println("Renaming");
@@ -148,14 +148,14 @@ public class ContinousAudioConvereter extends Thread implements  EventSubscriber
         long frequency = config.getOggFrequency();
         
         File oggTemp = getFileForDocument(recordingID, wav, "tmp.ogg");
-        FFMpegConverter converter = new FFMpegConverter(ffmpegcmd, FFMpegConverter.ENCODER_VORBIS);
+        FFMpegConverter converter = new FFMpegConverter(getFfmpegcmd(), FFMpegConverter.ENCODER_VORBIS);
 
         converter.convert(wav, bitrate, frequency, oggTemp, true);
         oggTemp.renameTo(ogg);
         return ogg;
     }
     private File convertToTs(String recordingID, File mp3) throws InterruptedException, IOException {
-        FFMpegConverter converter = new FFMpegConverter(ffmpegcmd, FFMpegConverter.ENCODER_MP3);
+        FFMpegConverter converter = new FFMpegConverter(getFfmpegcmd(), FFMpegConverter.ENCODER_MP3);
         File ts = getFileForDocument(recordingID, mp3, ".ts");
         converter.makeTS(mp3, ts);
         return ts;
@@ -196,6 +196,13 @@ public class ContinousAudioConvereter extends Thread implements  EventSubscriber
      */
     public void setConfig(SplitAudioRecorderConfiguration config) {
         this.config = config;
+    }
+
+    /**
+     * @return the ffmpegcmd
+     */
+    public String getFfmpegcmd() {
+        return ffmpegcmd;
     }
 
 

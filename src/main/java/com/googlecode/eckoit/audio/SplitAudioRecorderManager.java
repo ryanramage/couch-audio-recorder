@@ -152,7 +152,7 @@ public class SplitAudioRecorderManager  {
 
 
     protected File[] mergeFiles(String recordingId) throws FileNotFoundException, IOException {
-        RecordingFinishedHelper helper = new RecordingFinishedHelper(intermediateDir, finalDir);
+        RecordingFinishedHelper helper = new RecordingFinishedHelper(intermediateDir, finalDir, cac.getFfmpegcmd());
         return helper.recordingFinished(recordingId);
     }
 
