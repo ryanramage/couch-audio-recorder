@@ -288,6 +288,8 @@ public class SimpleTrayRecorder {
                .append(url.getHost());
         if (url.getPort() > 0) {
             builder.append(":").append(url.getPort());
+        } else {
+            builder.append(":").append(80);
         }
 
 
