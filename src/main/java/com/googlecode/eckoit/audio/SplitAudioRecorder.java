@@ -6,6 +6,7 @@
 package com.googlecode.eckoit.audio;
 
 import com.googlecode.eckoit.events.RecordingSplitEvent;
+import com.googlecode.eckoit.util.Slugger;
 import java.io.IOException;
 import java.io.File;
 
@@ -76,7 +77,10 @@ public class SplitAudioRecorder implements AudioRecorder {
             throw new LineUnavailableException();
         }
 
-        recordingFolder = new File(root, recordingID);
+
+        String safeFileName = Slugger.generateSlug(recordingID);
+
+        recordingFolder = new File(root, safeFileName);
         recordingFolder.mkdirs();
 
         sectionCount = 0;

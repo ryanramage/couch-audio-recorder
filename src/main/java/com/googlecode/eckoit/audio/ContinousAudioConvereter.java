@@ -11,6 +11,7 @@ import com.googlecode.eckoit.events.ConversionFinishedEvent;
 
 import com.googlecode.eckoit.events.RecordingSplitEvent;
 import com.googlecode.eckoit.events.StreamReadyEvent;
+import com.googlecode.eckoit.util.Slugger;
 import java.io.File;
 import java.io.IOException;
 import java.util.concurrent.LinkedBlockingQueue;
@@ -164,7 +165,10 @@ public class ContinousAudioConvereter extends Thread implements  EventSubscriber
         // just do sibblings
         String count = getSegmentCount(wav);
 
-        File parent = new File(destDir, recordingID);
+
+        String safeId = Slugger.generateSlug(recordingID);
+
+        File parent = new File(destDir, safeId);
         parent.mkdirs();
 
         

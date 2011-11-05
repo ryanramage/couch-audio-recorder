@@ -6,6 +6,7 @@
 package com.googlecode.eckoit.audio;
 
 
+import com.googlecode.eckoit.util.Slugger;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
@@ -41,16 +42,17 @@ public class RecordingFinishedHelper {
 
     public File[] recordingFinished(String recordingId) throws FileNotFoundException, IOException {
 
-        File parent = new File(recordingInProgressDir, recordingId);
+        String safeId = Slugger.generateSlug(recordingId);
+        File parent = new File(recordingInProgressDir, safeId);
 
 
 
         File[] mp3s = findFiles(parent, ".mp3");
         List<File> sortedMp3s = sortFilesNumerically(mp3s);
-        File finalMp3_bad = new File(recordingInProgressDir, recordingId + ".mp3.tmp");
+        File finalMp3_bad = new File(recordingInProgressDir, safeId + ".mp3.tmp");
         mergeFiles(finalMp3_bad, sortedMp3s);
 
-        File finalMp3_good = new File(recordingCompleteDir, recordingId + ".mp3");
+        File finalMp3_good = new File(recordingCompleteDir, safeId + ".mp3");
         try {
             polishMp3(finalMp3_bad, finalMp3_good);
         } catch (Exception ex) {
@@ -61,7 +63,7 @@ public class RecordingFinishedHelper {
 
         File[] oggs = findFiles(parent, ".ogg");
         List<File> sortedOggs = sortFilesNumerically(oggs);
-        File finalOgg = new File(recordingCompleteDir, recordingId + ".ogg");
+        File finalOgg = new File(recordingCompleteDir, safeId + ".ogg");
         mergeFiles(finalOgg, sortedOggs);
 
         return new File[] {finalMp3_good, finalOgg};
@@ -71,8 +73,9 @@ public class RecordingFinishedHelper {
 
 
     public List<File> findScreenShots(String recordingId) {
-        File parent = new File(recordingInProgressDir, recordingId);
-        File dir = new File(parent, recordingId);
+        String safeId = Slugger.generateSlug(recordingId);
+        File parent = new File(recordingInProgressDir, safeId);
+        File dir = new File(parent, safeId);
         File[] screenShots = findFiles(dir, ".png");
         return (List<File>) Arrays.asList(screenShots);
     }
