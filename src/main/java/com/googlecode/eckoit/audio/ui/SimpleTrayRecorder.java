@@ -64,8 +64,8 @@ public class SimpleTrayRecorder {
         this.connector = conn;
         this.workingDir = working;
 
-        normal = createImage("/record_icon.png");
-        on = createImage("/record_icon_on.png");
+        normal = createImage("/record_icon_small.png");
+        on = createImage("/record_icon_on_small.png");
 
         SystemTray tray = SystemTray.getSystemTray();
         if (!SystemTray.isSupported()) {
