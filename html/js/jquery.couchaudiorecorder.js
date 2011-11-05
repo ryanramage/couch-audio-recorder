@@ -150,8 +150,8 @@
 
         var mic = $('<div class="mic-icon" ></div>');
 
-        var start =  $('<button class="start" >Start</button>');
-        var stop  =  $('<button class="stop" disabled="disabled">Stop</button>');
+        var start =  $('<button class="btn start" >Start</button>');
+        var stop  =  $('<button class="btn stop" disabled="disabled">Stop</button>');
         var timer =  $('<div   class="timer">00:00:00</div>');
         var status = $('<div   class="status"></div>');
 
@@ -178,6 +178,7 @@
     }
 
     function startRecording(doc, data) {
+        uiStartRecordingConfirmed();
         doc.recordingState.startAsked = new Date().getTime();
         data.settings.db.saveDoc(doc, {
             success : function(){
@@ -331,6 +332,44 @@
 
 
     $.couchaudiorecorder = {
+        deleteRecording : function(docId, db, callback) {
+            db.view('couchaudiorecorder/byStream.m3u8', {
+                key : docId,
+                success : function(results) {
+
+                   var count = results.rows.length;
+
+                   $.each(results.rows, function(i, row) {
+                       var doc = { _id : row.id};
+                       $.extend(doc, row.value);
+                       db.removeDoc(doc, {
+                           success : function() {
+                               count-=1;
+                               if (count == 0) {
+                                   callback();
+                               }
+                           }
+                       });
+                   });
+
+
+                    //var ids = $.map(results.rows, function(val, i) {
+                    //    console.log(val);
+                    //    return val.id;
+                    //});
+
+
+
+                    // not working
+                    //db.bulkRemove({docs:ids}, {
+                    //   success : function() {
+                    //       callback();
+                    //   }
+                    //});
+                    
+                }
+            });
+        },
         recordingStatus : function(doc) {
             var recordingState = doc.recordingState;
             if (recordingState != null) {

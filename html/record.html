@@ -3,7 +3,7 @@
   <meta charset="utf-8">
   <title>Couch Audio Recorder</title>
 
-
+  <link type="text/css" href="css/bootstrap.min.css" rel="stylesheet" />
   <link type="text/css" href="skin/couchaudiorecorder.default.css" rel="stylesheet" />
 
   <script type="text/javascript" src="js/jquery-1.6.2.min.js"></script>
@@ -14,7 +14,7 @@
           jQuery.couch.urlPrefix = 'api';
 
           var db = $.couch.db('');
-          var div = $('.container').couchaudiorecorder({
+          var div = $('.recorder').couchaudiorecorder({
               db : db
           });
 
@@ -40,13 +40,20 @@
 </head>
 
 <body>
-  <body>
-      
-
     <div class="container">
+        <ul class="breadcrumb">
+            <li><a href=".">Home</a> <span class="divider">/</span></li>
+            <li class="active">Recorder</li>
+        </ul>
 
 
-
+        
+        <h2>Recorder</h2>
+        <div class="row">
+            <div class="span6">&nbsp;</div>
+            <div class="span6 recorder"></div>
+            <div class="span6">&nbsp;</div>
+        </div>
     </div>
 </body>
 </html>

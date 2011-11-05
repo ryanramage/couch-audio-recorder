@@ -3,7 +3,7 @@
   <meta charset="utf-8">
   <title>Couch Audio Recorder</title>
 
-
+  <link type="text/css" href="css/bootstrap.min.css" rel="stylesheet" />
   <link type="text/css" href="skin/couchaudiorecorder.default.css" rel="stylesheet" />
 
   <script type="text/javascript" src="js/jquery-1.6.2.min.js"></script>
@@ -20,7 +20,7 @@
               descending: true,
               success : function(data) {
                   $.each(data.rows, function(i, row) {                      
-                      var $row = $('<tr class="row"></tr>');
+                      var $row = $('<tr></tr>');
 
 
 
@@ -34,23 +34,42 @@
 
 
                       if (row.doc.recordingState && row.doc.recordingState.startComplete) {
-                          var $stream = $(' <a href="audio/'+ row.id +'//stream.m3u8">stream</a>');
+                          var $stream = $('<td><a href="audio/'+ row.id +'//stream.m3u8">stream</a></td>');
                           $row.append($stream);
+                      } else {
+                          $row.append('<td></td>');
                       }
 
 
                       if (row.doc._attachments) {
-                          var $mp3 = $(' <a href="audio/'+ row.id +'/complete.mp3">mp3</a>');
+                          var $mp3 = $('<td><a href="audio/'+ row.id +'/complete.mp3">mp3</a></td>');
                           $row.append($mp3);
-                          var $ogg = $(' <a href="audio/'+ row.id +'/complete.ogg">ogg</a>');
+                          var $ogg = $('<td><a href="audio/'+ row.id +'/complete.ogg">ogg</a></td>');
                           $row.append($ogg);
+                      } else {
+                          $row.append('<td></td><td></td>');
                       }
 
+                      var $col = $('<td></td>');
+                      if (row.doc._attachments) {
+                          var $delete = $('<button class="btn">&#10008;</button>');
+                          $delete.click(function() {
+                              console.log('delete', row.id);
+                              $.couchaudiorecorder.deleteRecording(row.id, db, function() {
+                                 // delete the row
+                                 console.log("callback called");
+                                 $row.remove();
+                              });
+                          });
+                          $col.append($delete);
+                      }
                       
                       
-                      
+                      $row.append($col);
 
-                      $('.list').append($row);
+
+
+                      $('.recordings tbody').append($row);
                   })
               }
           })
@@ -64,14 +83,48 @@
 </head>
 
 <body>
-  <body>
-      
-    <h2>Recordings</h2>
-    <a href="record.html">New Recording</a>
-    <table class="list">
+      <div class="container">
+
+            <ul class="breadcrumb">
+              <li class="active">Home</li>
+            </ul>
 
 
+            <h1>Couch Audio Recorder</h1>
+            <div class="row">
 
-    </table>
+                <div class="span4">
+                    <a href="record.html" class="btn large  primary">New Recording</a>
+                </div>
+                
+            </div>
+            <div class="row">
+                <div class="span4">
+                    &nbsp;
+                </div>
+            </div>
+            <div class="row">
+                <div class="span16">
+                    <table class="recordings bordered-table zebra-striped">
+                        <thead>
+                            <tr>
+                                <th>Recording</th>
+                                <th>Status</th>
+                                <th>Stream</th>
+                                <th>mp3</th>
+                                <th>ogg</th>
+                                <th></th>
+                            </tr>
+                        </thead>
+                        <tbody>
+
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+
+
+      </div>
+
 </body>
 </html>

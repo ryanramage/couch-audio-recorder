@@ -4,7 +4,7 @@
  */
 
  .couchaudiorecorder {
-     width: 90px;
+     width: 120px;
 }
 
  .couchaudiorecorder .mic-icon {
@@ -19,6 +19,7 @@
 .couchaudiorecorder .timer {
     font-family: monospace;
     font-size: 20px;
+    text-align: center;
 }
 
 .couchaudiorecorder .status {
