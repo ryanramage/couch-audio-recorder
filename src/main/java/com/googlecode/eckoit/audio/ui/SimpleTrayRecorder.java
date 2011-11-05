@@ -282,7 +282,16 @@ public class SimpleTrayRecorder {
 
     protected static String getUrl(String str) throws MalformedURLException {
         URL url = new URL(str);
-        return url.getProtocol() + "://" + url.getHost() + ":" + url.getPort();
+        StringBuilder builder = new StringBuilder();
+        builder.append(url.getProtocol())
+               .append("://")
+               .append(url.getHost());
+        if (url.getPort() > 0) {
+            builder.append(":").append(url.getPort());
+        }
+
+
+        return builder.toString();
 
     }
 
