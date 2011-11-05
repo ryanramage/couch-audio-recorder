@@ -16,6 +16,12 @@
      background-repeat: no-repeat;
 }
 
+.mic-recording {
+    background-image: url(noun_project_171_2.png) !important;
+}
+
+
+
 .couchaudiorecorder .timer {
     font-family: monospace;
     font-size: 20px;

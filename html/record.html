@@ -19,18 +19,34 @@
           });
 
           var hash = location.hash;
-          
+
+
+          function showStreamInfo(doc) {
+              console.log(doc);
+              var $stream = $('<a href="audio/'+ doc._id +'/stream.m3u8">stream</a>');
+              $('.stream').html($stream);
+          }
+
+          function showfiles(doc) {
+              var $mp3 = $('<a href="audio/'+ doc._id +'/complete.mp3">mp3</a>');
+              $('.mp3').html($mp3);
+              var $ogg = $('<a href="audio/'+ doc._id +'/complete.ogg">ogg</a>');
+              $('.ogg').html($ogg);
+          }
+ 
+          div.bind("startComplete", function(event, doc) {
+              showStreamInfo(doc);
+                        
+          }).bind("recordingComplete", function(event, doc) {
+             showStreamInfo(doc);
+             showfiles(doc);
+          });
           if (hash) {
               var docId = hash.substring(1);
-
               div.couchaudiorecorder("loadRecording", docId);
           } else {
               div.couchaudiorecorder("newRecording");
           }
-          div.bind("startComplete", function(doc) {
-              console.log("Event: Recorder Started.............. ");
-          })
-
 
 
           
@@ -53,6 +69,19 @@
             <div class="span6">&nbsp;</div>
             <div class="span6 recorder"></div>
             <div class="span6">&nbsp;</div>
+        </div>
+        <div class="row">
+            <div class="span6">
+
+                    <p><span class="stream"></span></p>
+                    <p><span class="mp3"></span></p>
+                    <p><span class="ogg"></span></p>
+
+
+
+
+            </div>
+
         </div>
     </div>
 </body>

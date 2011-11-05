@@ -91,6 +91,10 @@
                     // get the ui in the right state
                     makeUIRightForPreviousRecording(doc, data);
 
+                    
+                    var state = $.couchaudiorecorder.recordingStatus(doc);
+                    data.element.trigger(state, doc);
+
                 },
                 error : function() {
                     $.error( 'Unable to load recording: ' + recordingId );
@@ -116,9 +120,11 @@
                 startRecordingConfirmed(doc, data);
             }
             if (state == RecordingState.STOP_COMPLETE) {
+                uiStartRecordingConfirmed();
                 uiStopRecording() ;
             }
             if (state == RecordingState.RECORDING_COMPLETE) {
+                uiStartRecordingConfirmed();
                 uiStopRecording() ;
                 uiRecordingFinished();
                 
@@ -192,6 +198,7 @@
         // change the buttons
         $('.couchaudiorecorder button.start').attr('disabled', 'disabled');
         $('.couchaudiorecorder button.stop').removeAttr("disabled");
+        $('.couchaudiorecorder .mic-icon').addClass('mic-recording');
     }
 
 
@@ -234,7 +241,8 @@
 
     function uiStopRecording() {
         $('.couchaudiorecorder button.stop').attr('disabled', 'disabled');
-        $('.couchaudiorecorder div.status').text('Stopping...');
+        $('.couchaudiorecorder div.status').text('Processing...');
+        $('.couchaudiorecorder .mic-icon').removeClass('mic-recording');
     }
 
 
@@ -259,7 +267,7 @@
     function stopRecordingConfirmed(doc, data) {
         // these are just in case we did not init the stop event
         uiStopRecording();
-        $('.couchaudiorecorder div.status').text('Finishing...');
+        $('.couchaudiorecorder div.status').text('Processing...');
         clearInterval(data.updateTimerDisplayID);
     }
 
@@ -324,6 +332,8 @@
                 success : function(doc) {
                     var status = $.couchaudiorecorder.recordingStatus(doc);
                     stateEvent(doc, status, data);
+
+
                 }
             })
         });
