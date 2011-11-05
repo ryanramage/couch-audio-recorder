@@ -14,7 +14,7 @@
     qa : {
       host : "ecko-it.iriscouch.com",
       port : "5984",
-      db : "sampleqa",
+      db : "pirateradio",
       username : "test"
     }
   }
