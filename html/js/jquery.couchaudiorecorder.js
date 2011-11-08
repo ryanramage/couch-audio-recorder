@@ -45,7 +45,7 @@
                 });                
             });
         },
-        newRecording : function(recordingOptions) {
+        newRecording : function(recordingOptions, userCtx) {
             var recordingSettings = {
                 _id : "com.eckoit.recording:" + new Date().getTime()
             }
@@ -65,6 +65,10 @@
             var doc = {
                 _id : recordingSettings._id,
                 recordingState : {}
+            }
+
+            if (userCtx) {
+                doc.userCtx = userCtx;
             }
 
             if (recordingSettings.settings) {

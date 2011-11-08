@@ -8,6 +8,8 @@
 
   <script type="text/javascript" src="js/jquery-1.6.2.min.js"></script>
   <script type="text/javascript" src="js/jquery.couch.js"></script>
+  <script type="text/javascript" src="js/jquery.couchLogin.js"></script>
+  <script type="text/javascript" src="js/sha1.js"></script>
   <script type="text/javascript" src="js/jquery.couchaudiorecorder.js"></script>
  
   <script type="text/javascript">
@@ -15,6 +17,19 @@
           jQuery.couch.urlPrefix = 'api';
 
           var db = $.couch.db('');
+
+
+          $('.recordBtn').hide();
+          $('.login').couchLogin({
+              loggedIn : function() {
+                  $('.recordBtn').show();
+              },
+              loggedOut : function() {
+                $('.recordBtn').hide();
+              }
+          })
+
+
           db.view('couchaudiorecorder/recordings', {
               include_docs: true,
               descending: true,
@@ -29,6 +44,16 @@
 
 
                       var recordingDoc = row.doc;
+
+                      if (recordingDoc.userCtx) {
+                          $row.append('<td>'+ recordingDoc.userCtx.name +'</td>')
+                      } else {
+                          $row.append('<td></td>')
+                      }
+
+
+
+
                       var status = $.couchaudiorecorder.recordingStatus(recordingDoc);
                       $row.append('<td>' + status+'</td>')
 
@@ -91,10 +116,18 @@
 
 
             <h1>Couch Audio Recorder</h1>
+
+            <div class="row">
+                <div class="span4 login">
+                    
+                </div>
+            </div>
+
             <div class="row">
 
+
                 <div class="span4">
-                    <a href="record.html" class="btn large  primary">New Recording</a>
+                    <a href="record.html" class="btn large  primary recordBtn" disabled="disabled">New Recording</a>
                 </div>
                 
             </div>
@@ -109,6 +142,7 @@
                         <thead>
                             <tr>
                                 <th>Recording</th>
+                                <th>User</th>
                                 <th>Status</th>
                                 <th>Stream</th>
                                 <th>mp3</th>

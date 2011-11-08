@@ -18,9 +18,12 @@ var couchapp = require('couchapp')
     , {from:"/audio/:id/stream.m3u8", to:'_list/streamAudio/byStream.m3u8', query : {key: ":id"}}
     , {from:"/audio/:id/:doc/:attachment", to:'../../:doc/:attachment'}
     , {from:"/audio/:doc/:attachment", to:'../../:doc/:attachment'}
+    , {from:"/api/_session", to:'../../../_session'}
+    , {from:"/api/_uuids", to:'../../../_uuids'}
+    , {from:"/api/_users", to:'../../../_users'}
+    , {from:"/api/_users/*", to:'../../../_users/*'}
     , {from:"/api", to:'../../'}
     , {from:"/api/*", to:'../../*'}
-
     , {from:"/*", to:'*'}
     ];
 
@@ -111,9 +114,22 @@ var couchapp = require('couchapp')
 
  ddoc.shows['recorder.jnlp'] = function(doc, req) {
 
+        // make our arguments
+        var args  = {};
+        args.url = 'http://' + req.headers.Host;
+        args.db = req.userCtx.db;
+        args.recording = req.query.recording;
+        log(req);
+        args.user = req.userCtx.name;
+        if (args.user == null) {
+            args.user = req.query.user;
+        }
+        var args_str = JSON.stringify(args);
+
+
 	var ddoc2 = req.path[2];
 	var codebase = 'http://' + req.headers.Host + '/' + req.path[0] + '/_design/'+ddoc2 +'/';
-	var defaults = { codebase : codebase, href : '_show/recorder.jnlp?recording=' + req.query.recording };
+	var defaults = { codebase : codebase, href : '_show/recorder.jnlp?recording=' + req.query.recording + '&user=' + args.user};
 	var result = '<?xml version=\"1.0\" encoding=\"utf-8\"?>';
 	result += '<jnlp spec=\"1.5+\" codebase=\"'+codebase+'\" href=\"'+defaults.href+'\">';
 	result += '<information><title>Couch Audio Recorder</title><vendor>Eckoit Inc</vendor><homepage>http://eckoit.com</homepage><description kind=\"one-line\">A audio recorder for your couch.</description>';
@@ -138,12 +154,8 @@ var couchapp = require('couchapp')
 	result += '  <application-desc main-class=\"com.googlecode.eckoit.audio.ui.SimpleTrayRecorder\">';
 
 
-        // this is hacked up. for some reason webstart is not passing two args,
-        // so we are doing a space delimited
-        var arg = 'http://' + req.headers.Host + '/' + req.userCtx.db;
+        result += '  <argument>'+ args_str + '</argument>';
 
-        result += '  <argument>'+ arg + '</argument>';
-        result += '  <argument>'+ req.query.recording + '</argument>';
  
 
 	result += ' </application-desc>';
@@ -153,7 +165,22 @@ var couchapp = require('couchapp')
 
 
 
-/** add views/shows/lists below **/
+
+
+ ddoc.validate_doc_update = function(newDoc, oldDoc, userCtx, secObj) {
+      // we only care about recordings
+      var prefix = "com.eckoit.recording:";
+      if (newDoc._id.slice(0, prefix.length) == prefix) {
+        var docUser = null;
+        if (oldDoc && oldDoc.userCtx) {
+            docUser = oldDoc.userCtx.name;
+        }
+        if (newDoc._deleted && docUser) {
+            if (!userCtx.name) throw ({forbidden : "You must be logged in to delete this"});
+            if (userCtx.name != docUser) throw ({forbidden : "Only the recording creator can delete"});
+        }
+      }
+ }
 
 
 

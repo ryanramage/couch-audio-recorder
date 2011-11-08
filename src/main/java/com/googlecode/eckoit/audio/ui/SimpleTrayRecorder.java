@@ -34,6 +34,9 @@ import javax.swing.JFrame;
 import org.apache.commons.lang.StringUtils;
 import org.bushe.swing.event.EventBus;
 import org.bushe.swing.event.EventSubscriber;
+import org.codehaus.jackson.JsonGenerator;
+import org.codehaus.jackson.JsonNode;
+import org.codehaus.jackson.map.ObjectMapper;
 import org.ektorp.CouchDbConnector;
 import org.ektorp.CouchDbInstance;
 import org.ektorp.http.HttpClient;
@@ -60,7 +63,7 @@ public class SimpleTrayRecorder {
     MenuItem showPanel;
 
 
-    public SimpleTrayRecorder(CouchDbConnector conn, File working, String designDoc) {
+    public SimpleTrayRecorder(CouchDbConnector conn, File working, String designDoc, String userName) {
         this.connector = conn;
         this.workingDir = working;
 
@@ -90,7 +93,7 @@ public class SimpleTrayRecorder {
         config.setStream(true);
         recorder = new SplitAudioRecorderManager(ffmpeg, workingDir, config);
         dbRecorder = new CouchDBRecording(connector);
-
+        dbRecorder.setUserName(userName);
 
         // added to ensure no kids left behind
         Runtime.getRuntime().addShutdownHook(new Thread() {
@@ -213,47 +216,59 @@ public class SimpleTrayRecorder {
                 System.out.println("Arg: " + arg);
             }
 
-            // hack attack. webstart is messing our args. for now we pass one
-
-
-            // arg[0] url
-            // arg[1] recordingDoc optional
-
+            // the defaults:
             String url = "http://localhost:5983";
             String dbName  = "dbg";            
             String recordingDocId = null;
+            String user = null;
 
-            if (args.length == 2) {
-                // clean and easy
-                try {
-                    url = getUrl(args[0]);
-                    dbName  = getDb(args[0]);
-                } catch (Exception e) {
+            ObjectMapper mapper = new ObjectMapper();
+            mapper.configure(JsonGenerator.Feature.QUOTE_FIELD_NAMES, false);
+            try {
+                System.out.println("Setting with json");
+                JsonNode node = mapper.readTree(args[0]);
+                url = node.get("url").getTextValue();
+                dbName = node.get("db").getTextValue();
+                recordingDocId = node.get("recording").getTextValue();
+                user = node.get("user").getTextValue();
+                System.out.println("Json reading complete");
 
-                }
+            } catch(Exception ex) {
+                if (args.length == 2) {
+                    // clean and easy
+                    try {
+                        url = getUrl(args[0]);
+                        dbName  = getDb(args[0]);
+                    } catch (Exception e) {
 
-                if (args.length > 1 && StringUtils.isNotEmpty(args[1])) {
-                    recordingDocId = args[1];
-                }
-            } else if (args.length == 1) {
-                args = args[0].split(" ");
-                try {
-                    url = getUrl(args[0]);
-                    dbName  = getDb(args[0]);
-                } catch (Exception e) {
+                    }
 
-                }
+                    if (args.length > 1 && StringUtils.isNotEmpty(args[1])) {
+                        recordingDocId = args[1];
+                    }
+                } else if (args.length == 1) {
+                    args = args[0].split(" ");
+                    try {
+                        url = getUrl(args[0]);
+                        dbName  = getDb(args[0]);
+                    } catch (Exception e) {
 
-                if (args.length > 1 && StringUtils.isNotEmpty(args[1])) {
-                    recordingDocId = args[1];
+                    }
+
+                    if (args.length > 1 && StringUtils.isNotEmpty(args[1])) {
+                        recordingDocId = args[1];
+                    }
                 }
             }
+
+
+
 
 
             System.out.println("Url: " + url);
             System.out.println("db: " + dbName);
             System.out.println("doc: " + recordingDocId);
-
+            System.out.println("user: " + user);
 
 
 
@@ -263,7 +278,7 @@ public class SimpleTrayRecorder {
             CouchDbConnector connector = new StdCouchDbConnector(dbName, db);
 
             File dir = getWorkingDir();
-            SimpleTrayRecorder str = new SimpleTrayRecorder(connector, dir, "_design/couchaudiorecorder");
+            SimpleTrayRecorder str = new SimpleTrayRecorder(connector, dir, "_design/couchaudiorecorder", user);
 
             if (recordingDocId != null) {
                 System.out.println("There is a recording doc: " + recordingDocId);

@@ -8,45 +8,67 @@
 
   <script type="text/javascript" src="js/jquery-1.6.2.min.js"></script>
   <script type="text/javascript" src="js/jquery.couch.js"></script>
+  <script type="text/javascript" src="js/jquery.couchLogin.js"></script>
+  <script type="text/javascript" src="js/sha1.js"></script>
   <script type="text/javascript" src="js/jquery.couchaudiorecorder.js"></script>
   <script type="text/javascript">
       $(function() {
           jQuery.couch.urlPrefix = 'api';
 
           var db = $.couch.db('');
-          var div = $('.recorder').couchaudiorecorder({
-              db : db
-          });
-
-          var hash = location.hash;
 
 
-          function showStreamInfo(doc) {
-              console.log(doc);
-              var $stream = $('<a href="audio/'+ doc._id +'/stream.m3u8">stream</a>');
-              $('.stream').html($stream);
+          function setupRecorder(userCtx) {
+              var div = $('.recorder').couchaudiorecorder({
+                  db : db
+              });
+
+              var hash = location.hash;
+
+
+              function showStreamInfo(doc) {
+                  console.log(doc);
+                  var $stream = $('<a href="audio/'+ doc._id +'/stream.m3u8">stream</a>');
+                  $('.stream').html($stream);
+              }
+
+              function showfiles(doc) {
+                  var $mp3 = $('<a href="audio/'+ doc._id +'/complete.mp3">mp3</a>');
+                  $('.mp3').html($mp3);
+                  var $ogg = $('<a href="audio/'+ doc._id +'/complete.ogg">ogg</a>');
+                  $('.ogg').html($ogg);
+              }
+
+              div.bind("startComplete", function(event, doc) {
+                  showStreamInfo(doc);
+
+              }).bind("recordingComplete", function(event, doc) {
+                 showStreamInfo(doc);
+                 showfiles(doc);
+              });
+              if (hash) {
+                  var docId = hash.substring(1);
+                  div.couchaudiorecorder("loadRecording", docId, userCtx);
+              } else {
+                  div.couchaudiorecorder("newRecording", {}, userCtx);
+              }
           }
 
-          function showfiles(doc) {
-              var $mp3 = $('<a href="audio/'+ doc._id +'/complete.mp3">mp3</a>');
-              $('.mp3').html($mp3);
-              var $ogg = $('<a href="audio/'+ doc._id +'/complete.ogg">ogg</a>');
-              $('.ogg').html($ogg);
-          }
- 
-          div.bind("startComplete", function(event, doc) {
-              showStreamInfo(doc);
-                        
-          }).bind("recordingComplete", function(event, doc) {
-             showStreamInfo(doc);
-             showfiles(doc);
-          });
-          if (hash) {
-              var docId = hash.substring(1);
-              div.couchaudiorecorder("loadRecording", docId);
-          } else {
-              div.couchaudiorecorder("newRecording");
-          }
+
+          $('.login').couchLogin({
+              loggedIn : function(userCtx) {
+                  setupRecorder(userCtx);
+              },
+              loggedOut : function() {
+                window.location = ".";
+              }
+          })
+
+
+
+
+
+
 
 
           
@@ -65,6 +87,12 @@
 
         
         <h2>Recorder</h2>
+
+        <div class="row">
+            <div class="span4 login">
+
+            </div>
+        </div>
         <div class="row">
             <div class="span6">&nbsp;</div>
             <div class="span6 recorder"></div>

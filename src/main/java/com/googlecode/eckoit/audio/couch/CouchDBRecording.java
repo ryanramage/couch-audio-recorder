@@ -29,6 +29,7 @@ import java.util.Date;
 import java.util.UUID;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import org.apache.commons.lang.StringUtils;
 import org.bushe.swing.event.EventBus;
 import org.bushe.swing.event.EventSubscriber;
 import org.codehaus.jackson.JsonNode;
@@ -52,6 +53,7 @@ public class CouchDBRecording {
     private ChangesFeed feed;
     private String recordingDocIdPrefex = "com.eckoit.recording:";
     private String recorderUUID;
+    private String userName;
 
     private ObjectNode currentRecordingDoc;
     private boolean running = true;
@@ -83,8 +85,17 @@ public class CouchDBRecording {
                     ObjectNode recordingState = currentRecordingDoc.putObject("recordingState");
                     long dt = System.currentTimeMillis();
                     recordingState.put("recorderAsked", dt);
-                    recordingState.put("recorderAvailable", recorderUUID);
+                    recordingState.put("recorderAvailable", getRecorderUUID());
                     recordingState.put("startAsked", dt);
+
+                    if (StringUtils.isNotEmpty(userName)) {
+                        ObjectNode userCtx = currentRecordingDoc.putObject("userCtx");
+                        userCtx.put("name", userName);
+                        userCtx.putArray("roles");
+                    }
+
+
+
                 }
 
                 ObjectNode recordingState = getRecordingState(currentRecordingDoc);
@@ -193,7 +204,7 @@ public class CouchDBRecording {
                 } else if (state == RecordingState.RECORDER_AVAILABLE || state == RecordingState.RECORDER_ASKED) {
                     // ok we will update with our id,
                     ObjectNode recordingState = getRecordingState(testDoc);
-                    recordingState.put("recorderAvailable", recorderUUID);
+                    recordingState.put("recorderAvailable", getRecorderUUID());
                     connector.update(testDoc);
                 }
                 // no idea how to handle the other states right now.
@@ -248,17 +259,34 @@ public class CouchDBRecording {
     }
 
 
+
+    protected boolean areWeTheRecorder(ObjectNode doc, String whoAmI){
+        if (whoAmI == null) return true; // I guess we handle it all
+        JsonNode userCtx = doc.get("userCtx");
+        if (userCtx != null) {
+            String docUserName = userCtx.get("name").getTextValue();
+            return (whoAmI.equals(docUserName));
+        }
+        return false;
+
+    }
+
+
+
+
     protected void processRecordingDoc(ObjectNode doc) {
         final RecordingState state = detectState(doc);
         System.out.println("state: " + state.name());
         if (state == RecordingState.RECORDER_ASKED) {
             System.out.println("Recorder asked");
-            if (currentRecordingDoc == null) {                
-                 System.out.println("we are programmed to receive");
-                // we are free...lets volenteer
-                ObjectNode recordingState = getRecordingState(doc);
-                recordingState.put("recorderAvailable", recorderUUID);
-                connector.update(doc);
+            if (currentRecordingDoc == null) {
+                if (areWeTheRecorder(doc, userName)) {
+                    System.out.println("we are programmed to receive");
+                    // we are free...lets volenteer
+                    ObjectNode recordingState = getRecordingState(doc);
+                    recordingState.put("recorderAvailable", getRecorderUUID());
+                    connector.update(doc);
+                }
             }
             return;
         }
@@ -314,7 +342,7 @@ public class CouchDBRecording {
             JsonNode node = recordingState.get("recorderAvailable");
             if (node != null) {
                 String uuid = node.getTextValue();
-                if (recorderUUID.equals(uuid)) {
+                if (getRecorderUUID().equals(uuid)) {
                     return true;
                 }
             }
@@ -379,6 +407,34 @@ public class CouchDBRecording {
      */
     public void setRecordingDocIdPrefex(String recordingDocIdPrefex) {
         this.recordingDocIdPrefex = recordingDocIdPrefex;
+    }
+
+    /**
+     * @return the recorderUUID
+     */
+    public String getRecorderUUID() {
+        return recorderUUID;
+    }
+
+    /**
+     * @param recorderUUID the recorderUUID to set
+     */
+    public void setRecorderUUID(String recorderUUID) {
+        this.recorderUUID = recorderUUID;
+    }
+
+    /**
+     * @return the userName
+     */
+    public String getUserName() {
+        return userName;
+    }
+
+    /**
+     * @param userName the userName to set
+     */
+    public void setUserName(String userName) {
+        this.userName = userName;
     }
 
 
