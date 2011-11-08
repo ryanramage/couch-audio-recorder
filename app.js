@@ -89,7 +89,11 @@ var couchapp = require('couchapp')
                 }
             } else {
                 send('#EXTINF:10,\n'); // this means 10 seconds. We really should be getting this passed to us.
-                send(row.id + '/' + row.value.attachmentName + '\n');
+                var url_prefix = 'http://' + req.headers.Host + '/' + req.userCtx.db + '/_design/couchaudiorecorder/_rewrite/audio/'
+                if (req.query.url) {
+                    url_prefix = req.query.url;
+                }
+                send(url_prefix + row.id + '/' + row.value.attachmentName + '\n');
             }
         }
 
@@ -119,7 +123,6 @@ var couchapp = require('couchapp')
         args.url = 'http://' + req.headers.Host;
         args.db = req.userCtx.db;
         args.recording = req.query.recording;
-        log(req);
         args.user = req.userCtx.name;
         if (args.user == null) {
             args.user = req.query.user;
