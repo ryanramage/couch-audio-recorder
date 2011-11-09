@@ -33,3 +33,11 @@
     font-size: 9px;
     color: 999;
 }
+
+.couchaudiorecorder .icon {
+    background-image: url(loading.gif);
+    display: none;
+    width: 16px;
+    height: 16px;
+    float: right;
+}

@@ -42,7 +42,8 @@
                 data = $this.data('couchaudiorecorder', {
                     element : $this,
                     settings: settings
-                });                
+                });
+                uiLoading($this);
             });
         },
         newRecording : function(recordingOptions, userCtx) {
@@ -162,6 +163,18 @@
     }
 
 
+    function uiLoading(div) {
+        var icon  =  $('<div   class="icon"  ></div>')
+        var status = $('<div   class="status">Loading...</div>');
+        var mainDiv = $('<div></div>');
+        mainDiv.append(icon);
+        mainDiv.append(status);
+        div.html(mainDiv);
+        icon.show();
+    }
+
+
+
     function createControlPanel(doc, data) {
 
         var mic = $('<div class="mic-icon" ></div>');
@@ -169,7 +182,11 @@
         var start =  $('<button class="btn start" >Start</button>');
         var stop  =  $('<button class="btn stop" disabled="disabled">Stop</button>');
         var timer =  $('<div   class="timer">00:00:00</div>');
+        var icon  =  $('<div   class="icon"  ></div>')
         var status = $('<div   class="status"></div>');
+
+        var statusDiv = $('<div></div>');
+
 
         var mainDiv = $('<div></div>');
         mainDiv.append(mic);
@@ -180,7 +197,12 @@
         bottomDiv.append(stop);
 
         mainDiv.append(bottomDiv);
-        mainDiv.append(status);
+
+        statusDiv.append(icon);
+        statusDiv.append(status);
+
+
+        mainDiv.append(statusDiv);
         data.element.html(mainDiv);
 
         start.click( function() {
@@ -261,6 +283,7 @@
         $('.couchaudiorecorder button.stop').attr('disabled', 'disabled');
         $('.couchaudiorecorder div.status').text('Processing...');
         $('.couchaudiorecorder .mic-icon').removeClass('mic-recording');
+        $('.couchaudiorecorder div.icon').show();
     }
 
 
@@ -286,12 +309,14 @@
         // these are just in case we did not init the stop event
         uiStopRecording();
         $('.couchaudiorecorder div.status').text('Processing...');
+        $('.couchaudiorecorder div.icon').show();
         clearInterval(data.updateTimerDisplayID);
     }
 
 
     function uiRecordingFinished() {
         $('.couchaudiorecorder div.status').text('Recording Complete!');
+        $('.couchaudiorecorder div.icon').hide();
     }
 
     function recordingCompleteConfirmed(doc, data) {
