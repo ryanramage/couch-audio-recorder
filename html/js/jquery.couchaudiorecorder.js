@@ -200,6 +200,14 @@
             success : function(){
                 // prob should start a timer here...just in case we
                 // have lost the recorder
+                //
+                // update the view
+                data.settings.db.view('couchaudiorecorder/recordings', {
+                    key : doc._id,
+                    success : function(ignore) {
+
+                    }
+                })
             }
         })
     }
@@ -292,6 +300,15 @@
         // these are just in case we did not init the stop event
         
         clearInterval(data.updateTimerDisplayID);
+
+        // update the view
+        data.settings.db.view('couchaudiorecorder/recordings', {
+            key : doc._id,
+            success : function(ignore) {
+
+            }
+        })
+
     }
 
 
