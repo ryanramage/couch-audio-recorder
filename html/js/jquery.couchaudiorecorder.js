@@ -92,13 +92,19 @@
             data.settings.db.openDoc(recordingId, {
                 success : function(doc) {
                     initRecording(doc, data);
-                    // get the ui in the right state
-                    makeUIRightForPreviousRecording(doc, data);
-
-                    
                     var state = $.couchaudiorecorder.recordingStatus(doc);
-                    data.element.trigger(state, doc);
+                    if (state == 'recorderAvailable') {
+                        doc.recordingState = {};
+                        // ask for the recorder again.
+                        findRecorder(doc, data);
 
+
+                    } else {
+                        
+                        // get the ui in the right state
+                        makeUIRightForPreviousRecording(doc, data);
+                        data.element.trigger(state, doc);
+                    }
                 },
                 error : function() {
                     $.error( 'Unable to load recording: ' + recordingId );
