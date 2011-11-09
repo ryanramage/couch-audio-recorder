@@ -227,7 +227,7 @@ public class SimpleTrayRecorder {
             try {
                 System.out.println("Setting with json");
                 JsonNode node = mapper.readTree(args[0]);
-                url = node.get("url").getTextValue();
+                url = getUrl(node.get("url").getTextValue());
                 dbName = node.get("db").getTextValue();
                 recordingDocId = node.get("recording").getTextValue();
                 user = node.get("user").getTextValue();
