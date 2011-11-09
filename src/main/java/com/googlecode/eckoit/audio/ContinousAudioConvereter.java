@@ -92,8 +92,8 @@ public class ContinousAudioConvereter extends Thread implements  EventSubscriber
             if (config.isStream()) {
                 File ts = convertToTs(recordingID, mp3);
 
-                StreamReadyEvent sre = new StreamReadyEvent(wav, "video/MP2T", sectionStartTime);
-                sre.setAvailableToStream(mp3);
+                StreamReadyEvent sre = new StreamReadyEvent(mp3, "video/MP2T", sectionStartTime);
+                sre.setAvailableToStream(ts);
                 sre.setStreamDuration((int) (SplitAudioRecorder.getSplitTime() / 1000));
                 sre.setSegmentCount(getSegmentCount(wav));
                 EventBus.publish(sre);

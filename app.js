@@ -50,9 +50,19 @@ var couchapp = require('couchapp')
               emit(doc._id, temp);
           }
           if (doc.type && doc.type == "com.eckoit.recordingSegment" && doc.recording && doc._attachments) {
-              for (first in doc._attachments) break;
-              var attachmentInfo = doc._attachments[first];
-              var data = {_id: doc._id, attachmentName : first, attachmentInfo: attachmentInfo, _rev: doc._rev};
+              function endsWith(str, suffix) {
+                  return (str[str.length - 1] == suffix);
+              }
+
+
+              var attachment;
+              for (attachment in doc._attachments) {
+                  if (endsWith(attachment, 'ts')) {
+                      break;
+                  }
+              }
+              var attachmentInfo = doc._attachments[attachment];
+              var data = {_id: doc._id, attachmentName : attachment, attachmentInfo: attachmentInfo, _rev: doc._rev};
               if (doc.startTime) {
                   data.startTime = doc.startTime;
               }

@@ -175,16 +175,31 @@ public class CouchDBRecording {
                         node.put("startTime", t.getStartTime());
                         connector.create(node);
 
-                        // attach
-                        FileInputStream fis = new FileInputStream(t.getAvailableToStream());
-                        String name = "fileSequence" + t.getSegmentCount() + ".ts";
-                        AttachmentInputStream ais = new AttachmentInputStream(name,fis, t.getContentType());
-
                         String id = node.get("_id").getTextValue();
                         String rev = node.get("_rev").getTextValue();
-                        rev =  connector.createAttachment(id, rev, ais);
-                        ais.close();
-                    fis.close();
+                        {
+                            // attach stream
+                            FileInputStream fis = new FileInputStream(t.getAvailableToStream());
+                            String name = "fileSequence" + t.getSegmentCount() + ".ts";
+                            AttachmentInputStream ais = new AttachmentInputStream(name,fis, t.getContentType());
+
+                            
+                            rev =  connector.createAttachment(id, rev, ais);
+                            ais.close();
+                            fis.close();
+                        }
+                        {
+                            // attach mp3
+                            FileInputStream fis = new FileInputStream(t.getFinishedFile());
+                            String name = "fileSequence" + t.getSegmentCount() + ".mp3";
+                            AttachmentInputStream ais = new AttachmentInputStream(name,fis, "audio/mp3");
+
+                            rev =  connector.createAttachment(id, rev, ais);
+                            ais.close();
+                            fis.close();
+                        }
+                        
+                    
                     } catch (Exception e) {
                         System.out.println(e.getMessage());
                     }

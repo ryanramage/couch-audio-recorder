@@ -59,7 +59,7 @@
 
 
                       if (row.doc.recordingState && row.doc.recordingState.startComplete) {
-                          var $stream = $('<td><a href="audio/'+ row.id +'/stream.m3u8">stream</a></td>');
+                          var $stream = $('<td><a href="stream.html#'+ row.id +'">stream</a></td>');
                           $row.append($stream);
                       } else {
                           $row.append('<td></td>');

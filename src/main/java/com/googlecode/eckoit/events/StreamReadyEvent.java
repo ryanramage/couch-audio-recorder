@@ -17,6 +17,7 @@ public class StreamReadyEvent extends ConversionFinishedEvent {
     private String contentType;
     private long startTime;
 
+
     public StreamReadyEvent(File finishedFile, String contentType, long startTime) {
         super(finishedFile);
         this.contentType = contentType;
@@ -36,4 +37,5 @@ public class StreamReadyEvent extends ConversionFinishedEvent {
     public long getStartTime() {
         return startTime;
     }
+
 }

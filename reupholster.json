@@ -16,6 +16,12 @@
       port : "5984",
       db : "pirateradio",
       username : "test"
+    },
+    reupholster : {
+      host : "reupholster.iriscouch.com",
+      port : "5984",
+      db : "pirateradio",
+      username : "test"
     }
   }
 }
