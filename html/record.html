@@ -39,8 +39,11 @@
                   $('.ogg').html($ogg);
               }
 
+              
+
               div.bind("startComplete", function(event, doc) {
                   showStreamInfo(doc);
+                  location.hash = '#' + doc._id;
 
               }).bind("recordingComplete", function(event, doc) {
                  showStreamInfo(doc);
