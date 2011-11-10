@@ -145,6 +145,21 @@
     }
 
 
+    function startedPluginPoll(doc, data) {
+        console.log('polling doc');
+        data.settings.db.openDoc(doc._id, {
+            success : function(doc) {
+                var state = $.couchaudiorecorder.recordingStatus(doc);
+                if (state == 'recorderAvailable') {
+                    // get the ui in the right state
+                    makeUIRightForPreviousRecording(doc, data);
+                    data.element.trigger(state, doc);
+                    clearTimeout(data.startPluginTimeoutID);
+                }
+            }
+        });
+        data.startPluginTimeoutID = setTimeout(startedPluginPoll, 500, doc, data);
+    }
 
 
     function recorderNotFound(doc, data) {
@@ -152,8 +167,15 @@
         if (doc._id) {
             url += "?recording=" + doc._id;
         }
-
-        data.element.html('<p>Please start your <a href="'+url+'">Audio Recorder Plugin</a> </p>');
+        var link = $('<a href="'+url+'">Audio Recorder Plugin</a>');
+        link.click(function() {
+            startedPluginPoll(doc, data);
+            link.hide();
+            var waiting = link.parent().append('<div></div>');
+            uiLoading(waiting, 'Waiting For Plugin...');
+        })
+        data.element.html('<p>Please start your </p>');
+        data.element.append(link);
     }
 
 
@@ -163,9 +185,10 @@
     }
 
 
-    function uiLoading(div) {
+    function uiLoading(div, message) {
+        if (!message) message = "Loading...";
         var icon  =  $('<div   class="icon"  ></div>')
-        var status = $('<div   class="status">Loading...</div>');
+        var status = $('<div   class="status">'+ message +'</div>');
         var mainDiv = $('<div></div>');
         mainDiv.append(icon);
         mainDiv.append(status);
@@ -402,7 +425,7 @@
                    var count = results.rows.length;
 
                    $.each(results.rows, function(i, row) {
-                       var doc = { _id : row.id};
+                       var doc = {_id : row.id};
                        $.extend(doc, row.value);
                        db.removeDoc(doc, {
                            success : function() {
