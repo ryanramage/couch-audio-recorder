@@ -151,14 +151,26 @@
             success : function(doc) {
                 var state = $.couchaudiorecorder.recordingStatus(doc);
                 if (state == 'recorderAvailable') {
+                    // cancel and resubscribe
+                    if (data.promise) {
+                        try {
+                            data.promise.stop();
+                        } catch (e) {}
+                    }
+                    initRecording(doc, data);
+
                     // get the ui in the right state
                     makeUIRightForPreviousRecording(doc, data);
                     data.element.trigger(state, doc);
                     clearTimeout(data.startPluginTimeoutID);
+
+
+
+
                 }
             }
         });
-        data.startPluginTimeoutID = setTimeout(startedPluginPoll, 500, doc, data);
+        data.startPluginTimeoutID = setTimeout(startedPluginPoll, 1000, doc, data);
     }
 
 
@@ -401,7 +413,8 @@
     function initRecording(doc, data) {
         // subscribe!
         //var $changes = settings.db.changes(null, {filter : "couchaudiorecorder/recordings", id : doc._id});
-        data.settings.db.changes(null, {filter : "couchaudiorecorder/recordings", id : doc._id}).onChange(function (change) {
+        data.promise = data.settings.db.changes(null, {filter : "couchaudiorecorder/recordings", id : doc._id});
+        data.promise.onChange(function (change) {
             // get the doc
             data.settings.db.openDoc(doc._id, {
                 success : function(doc) {
