@@ -1,0 +1,20 @@
+/* 
+    Document   : local
+    Created on : Nov 10, 2011, 6:41:07 AM
+    Author     : ryan
+    Description:
+        Purpose of the stylesheet follows.
+*/
+
+/* 
+   TODO customize this sample style
+   Syntax recommendation http://www.w3.org/TR/REC-CSS2/
+*/
+
+root { 
+    display: block;
+}
+
+.btn {
+    cursor: pointer !important;
+}

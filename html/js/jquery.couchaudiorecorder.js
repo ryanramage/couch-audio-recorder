@@ -359,10 +359,24 @@
     }
 
 
+
+
+
+
+    function uiUploadingConfirmed(doc, data) {
+        $('.couchaudiorecorder div.status').text('Uploading...');
+    }
+
+    function uploadingConfirmed(doc, data) {
+        // not much to this
+        uiUploadingConfirmed(doc, data);
+    }
+
     function uiRecordingFinished() {
         $('.couchaudiorecorder div.status').text('Recording Complete!');
         $('.couchaudiorecorder div.icon').hide();
     }
+
 
     function recordingCompleteConfirmed(doc, data) {
         uiStopRecording();
@@ -412,6 +426,9 @@
         }
         if (state == RecordingState.STOP_COMPLETE) {
             stopRecordingConfirmed(doc, data);
+        }
+        if (state == RecordingState.POST_PROCESSING_STARTED) {
+            uploadingConfirmed(doc, data);
         }
         if (state == RecordingState.RECORDING_COMPLETE) {
             recordingCompleteConfirmed(doc, data);

@@ -116,19 +116,25 @@ public class CouchDBRecording {
         EventBus.subscribeStrongly(PostProcessingStartedEvent.class, new EventSubscriber<PostProcessingStartedEvent>() {
             @Override
             public void onEvent(PostProcessingStartedEvent t) {
-                ObjectNode recordingState = getRecordingState(currentRecordingDoc);
-                recordingState.put("postProcessingStarted", new Date().getTime());
-                connector.update(currentRecordingDoc);
+                //ObjectNode recordingState = getRecordingState(currentRecordingDoc);
+                //recordingState.put("postProcessingStarted", new Date().getTime());
+                //connector.update(currentRecordingDoc);
             }
         });
         EventBus.subscribeStrongly(RecordingCompleteEvent.class, new EventSubscriber<RecordingCompleteEvent>() {
             @Override
             public void onEvent(RecordingCompleteEvent t) {
-                
-                
+
+                String id = currentRecordingDoc.get("_id").getTextValue();
+                currentRecordingDoc = connector.get(ObjectNode.class, id);
+                {
+                    ObjectNode recordingState = getRecordingState(currentRecordingDoc);
+                    recordingState.put("postProcessingStarted", new Date().getTime());
+                    connector.update(currentRecordingDoc);
+                }
 
                 EventBus.publish(new UploadingStartedEvent());
-                String id = currentRecordingDoc.get("_id").getTextValue();
+                
                 String revision = currentRecordingDoc.get("_rev").getTextValue();
                 try {
                     // mp3
