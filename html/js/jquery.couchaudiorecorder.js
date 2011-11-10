@@ -251,7 +251,7 @@
     }
 
     function startRecording(doc, data) {
-        uiStartRecordingConfirmed();
+        uiStartRecording();
         doc.recordingState.startAsked = new Date().getTime();
         data.settings.db.saveDoc(doc, {
             success : function(){
@@ -269,12 +269,14 @@
         })
     }
 
-    function uiStartRecordingConfirmed() {
-        // change the buttons
+
+    function uiStartRecording() {
         $('.couchaudiorecorder button.start').attr('disabled', 'disabled');
-        $('.couchaudiorecorder button.stop').removeAttr("disabled");
-        $('.couchaudiorecorder .mic-icon').addClass('mic-recording');
+        $('.couchaudiorecorder button.stop' ).attr('disabled', 'disabled');
     }
+
+
+
 
 
     function startRecordingConfirmed(doc, data) {
@@ -282,6 +284,14 @@
         data.updateTimerDisplayID = setInterval(updateTimerDisplay, 1000, doc)
         uiStartRecordingConfirmed();
     }
+
+    function uiStartRecordingConfirmed() {
+        // change the buttons
+        $('.couchaudiorecorder button.start').attr('disabled', 'disabled');
+        $('.couchaudiorecorder button.stop').removeAttr("disabled");
+        $('.couchaudiorecorder .mic-icon').addClass('mic-recording');
+    }
+
 
     var timeFormat = {
             showHour: true,
