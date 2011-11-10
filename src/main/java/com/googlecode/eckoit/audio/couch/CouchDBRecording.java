@@ -124,9 +124,8 @@ public class CouchDBRecording {
         EventBus.subscribeStrongly(RecordingCompleteEvent.class, new EventSubscriber<RecordingCompleteEvent>() {
             @Override
             public void onEvent(RecordingCompleteEvent t) {
-                ObjectNode recordingState = getRecordingState(currentRecordingDoc);
-                recordingState.put("recordingComplete", new Date().getTime());
-                connector.update(currentRecordingDoc);
+                
+                
 
                 EventBus.publish(new UploadingStartedEvent());
                 String id = currentRecordingDoc.get("_id").getTextValue();
@@ -154,6 +153,13 @@ public class CouchDBRecording {
 
                 }
                 EventBus.publish(new UploadingFinishedEvent());
+
+
+                // lame extra get
+                currentRecordingDoc = loadRecordingDoc(id);
+                ObjectNode recordingState = getRecordingState(currentRecordingDoc);
+                recordingState.put("recordingComplete", new Date().getTime());
+                connector.update(currentRecordingDoc);
                 currentRecordingDoc = null;
             }
         });
