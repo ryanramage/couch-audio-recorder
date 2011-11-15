@@ -1,3 +1,10 @@
+Couch Audio Recorder features cross platform recording, player embedding, audio streaming, all on couchdb.
+
+It includes an example application the demonstrates all the features. The demo application can be found here:
+
+http://reupholster.iriscouch.com:5984/pirateradio/_design/couchaudiorecorder/_rewrite/
+
+
 ## License
 
 This project is under an [Apache 2.0 license](https://github.com/ryanramage/couch-audio-recorder/blob/master/LICENSE.txt) .
