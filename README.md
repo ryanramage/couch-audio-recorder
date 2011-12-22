@@ -1,4 +1,9 @@
-Couch Audio Recorder features cross platform recording, player embedding, audio streaming, all on couchdb.
+Couch Audio Recorder features cross platform recording, player embedding, audio streaming, all in a couchapp!
+
+To use in your kanso app, include this package, and follow the use of the jquery plugin here:
+
+https://github.com/ryanramage/couch-audio-recorder/blob/master/html/record.html
+
 
 It includes an example application the demonstrates all the features. The demo application can be found here:
 
