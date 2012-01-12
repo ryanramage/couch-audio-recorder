@@ -14,17 +14,9 @@ var couchapp = require('couchapp')
 
   ddoc.language = "javascript";
   ddoc.rewrites = [
-      {from:"/", to:'index.html'}
-    , {from:"/audio/:id/stream.m3u8", to:'_list/streamAudio/byStream.m3u8', query : {key: ":id"}}
+      {from:"/audio/:id/stream.m3u8", to:'_list/streamAudio/byStream.m3u8', query : {key: ":id"}}
     , {from:"/audio/:id/:doc/:attachment", to:'../../:doc/:attachment'}
     , {from:"/audio/:doc/:attachment", to:'../../:doc/:attachment'}
-    , {from:"/api/_session", to:'../../../_session'}
-    , {from:"/api/_uuids", to:'../../../_uuids'}
-    , {from:"/api/_users", to:'../../../_users'}
-    , {from:"/api/_users/*", to:'../../../_users/*'}
-    , {from:"/api", to:'../../'}
-    , {from:"/api/*", to:'../../*'}
-    , {from:"/*", to:'*'}
     ];
 
 

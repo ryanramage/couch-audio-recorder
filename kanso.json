@@ -1,5 +1,5 @@
 {
-    "name": "couchaudiorecorder",
+    "name": "couch-audio-recorder",
     "version": "0.0.1",
     "description": "A module to record and stream audio from a couchapp.",
     "app": "app",
