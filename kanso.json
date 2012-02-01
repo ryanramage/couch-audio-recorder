@@ -1,9 +1,11 @@
 {
     "name": "couch-audio-recorder",
-    "version": "0.0.1",
+    "version": "0.0.2",
     "description": "A module to record and stream audio from a couchapp.",
-    "app": "app",
+    "attachments": ["couchaudiorecorder"],
+    "modules" : ["lib"],
     "dependencies": {
-        "node-couchapp": null
+         "attachments": null,
+         "modules" : null
     }
 }

@@ -66,8 +66,8 @@ public class FFMpegSetterUpper {
 
 
 
-    String windowsAttachmentName = "binaries/ffmpeg-win32.zip";
-    String macAttachmentName = "binaries/ffmpeg-mac64.zip";
+    String windowsAttachmentName = "couchaudiorecorder/binaries/ffmpeg-win32.zip";
+    String macAttachmentName = "couchaudiorecorder/binaries/ffmpeg-mac64.zip";
 
 
     List<String> windowsLocations = Arrays.asList(

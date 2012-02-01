@@ -71,7 +71,7 @@
                     <storepass>m2m2m2</storepass>
                     <!--sigfile>m2m2m2</sigfile-->
                     <alias>alias</alias>
-                    <validity>180</validity>
+                    <validity>680</validity>
 
                     <dnameCn>www.example.com</dnameCn>
                     <dnameOu>None</dnameOu>
