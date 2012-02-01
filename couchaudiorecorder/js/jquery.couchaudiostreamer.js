@@ -27,7 +27,7 @@
                 }
                 var settings = {
                     // not sure what I need yet
-                    swfPath: "/js/jPlayer"
+                    swfPath: "/couchaudiorecorder/js/jPlayer"
                 }
 
                 $.extend( settings, options );
