@@ -101,7 +101,6 @@
                 success : function(doc) {
                     initRecording(doc, data);
                     var state = $.couchaudiorecorder.recordingStatus(doc);
-                    console.log(state);
                     if (state == 'recorderAvailable' || state == 'startAsked') {
                         doc.recordingState = {};
                         // ask for the recorder again.
