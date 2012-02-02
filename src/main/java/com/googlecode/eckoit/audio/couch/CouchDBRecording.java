@@ -58,10 +58,12 @@ public class CouchDBRecording {
     private ObjectNode currentRecordingDoc;
     private boolean running = true;
     private boolean streamAudio = true;
+    private String ddoc;
 
-    public CouchDBRecording(final CouchDbConnector connector) {
+    public CouchDBRecording(final CouchDbConnector connector, String ddoc) {
         this.connector = connector;
         this.recorderUUID = UUID.randomUUID().toString();
+        this.ddoc = ddoc;
 
         EventBus.subscribeStrongly(ExitApplicationMessage.class, new EventSubscriber<ExitApplicationMessage>() {
             @Override
@@ -248,7 +250,7 @@ public class CouchDBRecording {
     }
     
     public void watch() {
-        ChangesCommand cmd = new ChangesCommand.Builder().filter("couchaudiorecorder/recordings").build();
+        ChangesCommand cmd = new ChangesCommand.Builder().filter(ddoc + "/recordings").build();
         System.out.println("CouchDB recorder starting");
         while (running) {
             try {

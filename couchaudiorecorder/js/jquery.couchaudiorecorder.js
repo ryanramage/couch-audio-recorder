@@ -88,6 +88,9 @@
                     initRecording(doc, data);
                     var state = $.couchaudiorecorder.recordingStatus(doc);
                     stateEvent(doc, state, data);
+
+                    
+
                 }
             })
         },

@@ -86,13 +86,13 @@ public class SimpleTrayRecorder {
         }
 
         FFMpegSetterUpper fu = new FFMpegSetterUpper();
-        String ffmpeg = fu.ffmpegLocation(workingDir, connector, designDoc);
+        String ffmpeg = fu.ffmpegLocation(workingDir, connector, "_design/" +  designDoc);
 
 
         SplitAudioRecorderConfiguration config = new SplitAudioRecorderConfiguration();
         config.setStream(true);
         recorder = new SplitAudioRecorderManager(ffmpeg, workingDir, config);
-        dbRecorder = new CouchDBRecording(connector);
+        dbRecorder = new CouchDBRecording(connector, designDoc);
         dbRecorder.setUserName(userName);
 
         // added to ensure no kids left behind
@@ -221,6 +221,7 @@ public class SimpleTrayRecorder {
             String dbName  = "dbg";            
             String recordingDocId = null;
             String user = null;
+            String ddoc = null;
 
             ObjectMapper mapper = new ObjectMapper();
             mapper.configure(JsonGenerator.Feature.QUOTE_FIELD_NAMES, false);
@@ -231,6 +232,7 @@ public class SimpleTrayRecorder {
                 dbName = node.get("db").getTextValue();
                 recordingDocId = node.get("recording").getTextValue();
                 user = node.get("user").getTextValue();
+                ddoc = node.get("ddoc").getTextValue();
                 System.out.println("Json reading complete");
 
             } catch(Exception ex) {
@@ -269,6 +271,7 @@ public class SimpleTrayRecorder {
             System.out.println("db: " + dbName);
             System.out.println("doc: " + recordingDocId);
             System.out.println("user: " + user);
+            System.out.println("ddoc: " + ddoc);
 
 
 
@@ -278,7 +281,7 @@ public class SimpleTrayRecorder {
             CouchDbConnector connector = new StdCouchDbConnector(dbName, db);
 
             File dir = getWorkingDir();
-            SimpleTrayRecorder str = new SimpleTrayRecorder(connector, dir, "_design/couchaudiorecorder", user);
+            SimpleTrayRecorder str = new SimpleTrayRecorder(connector, dir, ddoc, user);
 
             if (recordingDocId != null) {
                 System.out.println("There is a recording doc: " + recordingDocId);
