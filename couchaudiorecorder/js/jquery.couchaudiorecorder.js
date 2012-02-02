@@ -29,7 +29,8 @@
                     $.error( 'please provide a db in the options' );
                 }
                 var settings = {
-                    launchRecorderUrl : "../_show/recorder.jnlp"
+                    launchRecorderUrl : "../_show/recorder.jnlp",
+                    designDoc : 'couchaudiorecorder'
                 }
 
                 $.extend( settings, options );
@@ -76,6 +77,12 @@
                 doc.settings = recordingSettings.settings;
             }
 
+            // put any additional properties direct on the doc
+            if (recordingSettings.additionalProperties) {
+                $.extend( doc, recordingSettings.additionalProperties );
+            }
+
+
             data.settings.db.saveDoc(doc, {
                 success : function(){
                     initRecording(doc, data);
@@ -94,7 +101,8 @@
                 success : function(doc) {
                     initRecording(doc, data);
                     var state = $.couchaudiorecorder.recordingStatus(doc);
-                    if (state == 'recorderAvailable') {
+                    console.log(state);
+                    if (state == 'recorderAvailable' || state == 'startAsked') {
                         doc.recordingState = {};
                         // ask for the recorder again.
                         findRecorder(doc, data);
@@ -259,7 +267,7 @@
                 // have lost the recorder
                 //
                 // update the view
-                data.settings.db.view('couchaudiorecorder/recordings', {
+                data.settings.db.view(data.settings.designDoc + '/recordings', {
                     key : doc._id,
                     success : function(ignore) {
 
@@ -386,7 +394,7 @@
         clearInterval(data.updateTimerDisplayID);
 
         // update the view
-        data.settings.db.view('couchaudiorecorder/recordings', {
+        data.settings.db.view(data.settings.designDoc + '/recordings', {
             key : doc._id,
             success : function(ignore) {
 
@@ -440,7 +448,7 @@
     function initRecording(doc, data) {
         // subscribe!
         //var $changes = settings.db.changes(null, {filter : "couchaudiorecorder/recordings", id : doc._id});
-        data.promise = data.settings.db.changes(null, {filter : "couchaudiorecorder/recordings", id : doc._id});
+        data.promise = data.settings.db.changes(null, {filter : data.settings.designDoc + "/recordings", id : doc._id});
         data.promise.onChange(function (change) {
             // get the doc
             data.settings.db.openDoc(doc._id, {
@@ -458,7 +466,7 @@
 
     $.couchaudiorecorder = {
         deleteRecording : function(docId, db, callback) {
-            db.view('couchaudiorecorder/byStream.m3u8', {
+            db.view( data.settings.designDoc + '/byStream.m3u8', {
                 key : docId,
                 success : function(results) {
 
