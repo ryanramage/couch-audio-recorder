@@ -290,13 +290,19 @@ public class CouchDBRecording {
 
 
     protected boolean areWeTheRecorder(ObjectNode doc, String whoAmI){
+        System.out.println("who ami '" + whoAmI + "'");
         if (whoAmI == null) return true; // I guess we handle it all
         JsonNode userCtx = doc.get("userCtx");
         if (userCtx != null) {
             String docUserName = userCtx.get("name").getTextValue();
+            System.out.println("doc user: '" + docUserName + "'");
+            if (StringUtils.isEmpty(docUserName)) return true; // no one is specified. 
+
             return (whoAmI.equals(docUserName));
+        } else {
+            System.out.println("The usetCtx is null");
+            return true; // no one is specified. 
         }
-        return false;
 
     }
 
@@ -309,6 +315,7 @@ public class CouchDBRecording {
         if (state == RecordingState.RECORDER_ASKED) {
             System.out.println("Recorder asked");
             if (currentRecordingDoc == null) {
+                System.out.println("current recording doc is null");
                 if (areWeTheRecorder(doc, userName)) {
                     System.out.println("we are programmed to receive");
                     // we are free...lets volenteer

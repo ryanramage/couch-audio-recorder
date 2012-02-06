@@ -6,6 +6,7 @@
     "modules" : ["lib"],
     "dependencies": {
          "attachments": null,
-         "modules" : null
+         "modules" : null,
+         "base64": null
     }
 }

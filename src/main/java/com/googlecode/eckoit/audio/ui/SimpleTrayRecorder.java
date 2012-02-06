@@ -231,8 +231,16 @@ public class SimpleTrayRecorder {
                 url = getUrl(node.get("url").getTextValue());
                 dbName = node.get("db").getTextValue();
                 recordingDocId = node.get("recording").getTextValue();
-                user = node.get("user").getTextValue();
-                ddoc = node.get("ddoc").getTextValue();
+
+
+                try {
+                    user = node.get("user").getTextValue();
+                } catch(Exception ex) {
+                    // no user
+                }
+
+
+                ddoc = node.get("dd").getTextValue();
                 System.out.println("Json reading complete");
 
             } catch(Exception ex) {
@@ -271,7 +279,7 @@ public class SimpleTrayRecorder {
             System.out.println("db: " + dbName);
             System.out.println("doc: " + recordingDocId);
             System.out.println("user: " + user);
-            System.out.println("ddoc: " + ddoc);
+            System.out.println("ddoc_name: " + ddoc);
 
 
 

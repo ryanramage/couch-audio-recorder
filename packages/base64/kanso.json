@@ -1,0 +1,17 @@
+{
+    "name": "base64",
+    "version": "0.0.1",
+    "categories": ["utils"],
+    "maintainers": [
+        {
+            "name": "Caolan McMahon",
+            "url": "http://caolanmcmahon.com"
+        }
+    ],
+    "modules": "base64.js",
+    "modules_attachment": false,
+    "dependencies": {
+        "modules": ">=0.0.8"
+    },
+    "description": "Functions for decoding and encoding strings using base64 encoding, includes utf8 support"
+}
